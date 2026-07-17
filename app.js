@@ -411,9 +411,15 @@ function renderCats() {
     grid.innerHTML = '<div class="empty-state">No tienes gatos registrados aun.</div>';
     return;
   }
-  const filtered = _catStatusFilter === 'all'
-    ? state.cats
-    : state.cats.filter(c => getCatStatus(c.id).cls === _catStatusFilter);
+  const filtered = (_catStatusFilter === 'all'
+    ? [...state.cats]
+    : state.cats.filter(c => getCatStatus(c.id).cls === _catStatusFilter))
+    .sort((a, b) => {
+      if (!a.birthdate && !b.birthdate) return 0;
+      if (!a.birthdate) return 1;
+      if (!b.birthdate) return -1;
+      return new Date(a.birthdate) - new Date(b.birthdate); // oldest first
+    });
 
   if (!filtered.length) {
     grid.innerHTML = '<div class="empty-state">Ningún gato con ese estado.</div>';
@@ -424,6 +430,7 @@ function renderCats() {
     const age    = c.birthdate ? calcAge(c.birthdate) : '';
     const status = getCatStatus(c.id);
     const info   = [c.breed || 'Sin raza', c.gender, age].filter(Boolean).join(' · ');
+    const menuId = `cat-menu-${c.id}`;
     return `<div class="cat-card">
       <div class="cat-card-photo" onclick="showCatDetail('${c.id}')">
         ${c.photo_url
@@ -439,16 +446,21 @@ function renderCats() {
               <span class="status-dot status-${status.cls}"></span>${status.label}
             </div>
           </div>
-          <div class="cat-card-icon-btns">
-            <button class="cat-icon-btn" onclick="showCatDetail('${c.id}')" aria-label="Ver detalle de ${c.name}" title="Ver detalle">
-              <i aria-hidden="true" class="fa-solid fa-eye"></i>
+          <div class="apt-menu-wrap">
+            <button class="apt-menu-btn" onclick="toggleCardMenu(event,'${menuId}')" aria-label="Opciones de ${c.name}">
+              <i aria-hidden="true" class="fa-solid fa-ellipsis-vertical"></i>
             </button>
-            <button class="cat-icon-btn" onclick="showCatForm('${c.id}')" aria-label="Editar ${c.name}" title="Editar">
-              <i aria-hidden="true" class="fa-solid fa-pen-to-square"></i>
-            </button>
-            <button class="cat-icon-btn cat-icon-btn-danger" onclick="confirmDelete('cat','${c.id}','${c.name}')" aria-label="Eliminar ${c.name}" title="Eliminar">
-              <i aria-hidden="true" class="fa-solid fa-trash-can"></i>
-            </button>
+            <div id="${menuId}" class="apt-menu-dropdown">
+              <button onclick="closeAptMenus();showCatDetail('${c.id}')">
+                <i class="fa-solid fa-eye"></i> Ver detalle
+              </button>
+              <button onclick="closeAptMenus();showCatForm('${c.id}')">
+                <i class="fa-solid fa-pen-to-square"></i> Editar
+              </button>
+              <button class="apt-menu-danger" onclick="closeAptMenus();confirmDelete('cat','${c.id}','${c.name}')">
+                <i class="fa-solid fa-trash-can"></i> Eliminar
+              </button>
+            </div>
           </div>
         </div>
       </div>
