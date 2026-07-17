@@ -634,19 +634,34 @@ function renderVets() {
   }
   grid.innerHTML = state.vets.map(v => `
     <div class="vet-card">
-      <div class="vet-card-name">Dr(a). ${v.name}</div>
-      <div class="vet-card-clinic">${v.clinic_name || 'Consultorio independiente'}</div>
+      <div class="vet-card-header">
+        <div class="vet-card-header-info">
+          <div class="vet-card-name">Dr(a). ${v.name}</div>
+          ${v.clinic_name ? `<div class="vet-card-clinic">${v.clinic_name}</div>` : ''}
+        </div>
+        <div class="apt-menu-wrap">
+          <button class="apt-menu-btn" onclick="toggleVetMenu(event,'${v.id}')" aria-label="Opciones" aria-haspopup="true">
+            <i aria-hidden="true" class="fa-solid fa-ellipsis-vertical"></i>
+          </button>
+          <div class="apt-menu-dropdown" id="vet-menu-${v.id}" role="menu">
+            <button role="menuitem" onclick="showVetForm('${v.id}');closeVetMenus()">
+              <i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar
+            </button>
+            <button role="menuitem" class="apt-menu-danger" onclick="confirmDelete('vet','${v.id}','${v.name}');closeVetMenus()">
+              <i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
       <div class="vet-card-info">
         ${v.address ? `<p><i aria-hidden="true" class="fa-solid fa-location-dot"></i> ${v.address}${v.city ? ', ' + v.city : ''}</p>` : ''}
         ${v.schedule ? `<p><i aria-hidden="true" class="fa-solid fa-clock"></i> ${v.schedule}</p>` : ''}
       </div>
-      <div class="vet-card-actions">
+      ${(v.phone || v.email || v.address) ? `<div class="vet-card-actions">
         ${v.phone ? `<a class="btn-vet-contact btn-vet-call" href="tel:${v.phone}" aria-label="Llamar a ${v.name}"><i aria-hidden="true" class="fa-solid fa-phone"></i> Llamar</a>` : ''}
         ${v.email ? `<a class="btn-vet-contact btn-vet-email" href="mailto:${v.email}" aria-label="Enviar correo a ${v.name}"><i aria-hidden="true" class="fa-solid fa-envelope"></i> Email</a>` : ''}
         ${v.address ? `<a class="btn-waze" href="${wazeUrl(v.address)}" target="_blank" rel="noopener noreferrer"><i aria-hidden="true" class="fa-solid fa-route"></i> Waze</a>` : ''}
-        <button class="btn-secondary" onclick="showVetForm('${v.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
-        <button class="btn-danger" onclick="confirmDelete('vet','${v.id}','${v.name}')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
-      </div>
+      </div>` : ''}
     </div>
   `).join('');
 }
@@ -901,6 +916,18 @@ function toggleAptMenu(e, aptId) {
 
 function closeAptMenus() {
   document.querySelectorAll('.apt-menu-dropdown.open').forEach(m => m.classList.remove('open'));
+}
+
+function toggleVetMenu(e, vetId) {
+  e.stopPropagation();
+  const menu = document.getElementById(`vet-menu-${vetId}`);
+  const isOpen = menu?.classList.contains('open');
+  closeAptMenus();
+  if (!isOpen) menu?.classList.add('open');
+}
+
+function closeVetMenus() {
+  closeAptMenus();
 }
 
 document.addEventListener('click', () => closeAptMenus());
