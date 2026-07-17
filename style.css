@@ -92,10 +92,9 @@ h1, h2, h3, h4 {
   display: inline-block;
   padding: 3px 10px;
   border-radius: var(--radius-full);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 .badge-green  { background: rgba(0,105,77,0.1);  color: #00513B; }
 .badge-yellow { background: var(--warn-pale);     color: #92400E; }
@@ -818,7 +817,7 @@ h1, h2, h3, h4 {
 .apt-time i { font-size: 0.75rem; }
 
 /* 3-dot menu */
-.apt-menu-wrap { position: relative; }
+.apt-menu-wrap { position: relative; align-self: start; }
 .apt-menu-btn {
   width: 34px; height: 34px;
   display: flex; align-items: center; justify-content: center;
