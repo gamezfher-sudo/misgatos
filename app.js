@@ -950,43 +950,70 @@ function renderConsultations() {
     return;
   }
   container.innerHTML = list.map(c => {
-    const consDocs = state.documents.filter(d => d.consultation_id === c.id);
-    const docsChips = consDocs.length ? `
-      <div class="cons-docs-chips">
-        ${consDocs.map(d => {
-          const icon = { receta: 'fa-file-prescription', analisis: 'fa-flask', rayos_x: 'fa-x-ray', otro: 'fa-file' }[d.type] || 'fa-file';
-          return d.file_url
-            ? `<button type="button" class="cons-doc-chip" onclick="openDocViewer('${d.file_url}','${d.title.replace(/'/g,"\\'")}','${d.file_type||''}')"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${d.title}</button>`
-            : `<span class="cons-doc-chip cons-doc-chip-nofile"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${d.title}</span>`;
-        }).join('')}
-      </div>
-    ` : '';
+    const consDocs   = state.documents.filter(d => d.consultation_id === c.id);
+    const visitD     = new Date(c.visit_date + 'T00:00:00');
+    const day        = visitD.getDate();
+    const mon        = visitD.toLocaleString('es', { month: 'short' });
+    const today      = todayStr();
+
+    const followUpClass = c.follow_up_date
+      ? (c.follow_up_date < today ? 'cons-followup-past' : c.follow_up_date <= daysFromNow(7) ? 'cons-followup-soon' : '')
+      : '';
+
+    const docsChipsHtml = consDocs.map(doc => {
+      const icon = { receta: 'fa-file-prescription', analisis: 'fa-flask', rayos_x: 'fa-x-ray', otro: 'fa-file' }[doc.type] || 'fa-file';
+      return doc.file_url
+        ? `<button type="button" class="cons-doc-chip" onclick="openDocViewer('${doc.file_url}','${doc.title.replace(/'/g,"\\'")}','${doc.file_type||''}')"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${doc.title}</button>`
+        : `<span class="cons-doc-chip cons-doc-chip-nofile"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${doc.title}</span>`;
+    }).join('');
+
     return `
-      <div class="list-item">
-        <div class="list-item-icon">${catAvatarHtml(c.cats)}</div>
-        <div class="list-item-body">
-          <h4>${c.cats?.name} — ${formatDate(c.visit_date)}</h4>
-          <p>${c.veterinarians?.name || 'Sin veterinario'} ${c.veterinarians?.clinic_name ? '· ' + c.veterinarians.clinic_name : ''}</p>
-          ${c.reason ? `<p><strong>Motivo:</strong> ${c.reason}</p>` : ''}
-          ${c.weight_at_visit ? `<p>Peso: ${c.weight_at_visit} kg${c.follow_up_date ? ` &nbsp;·&nbsp; Seguimiento: ${formatDate(c.follow_up_date)}` : ''}</p>` : (c.follow_up_date ? `<p>Seguimiento: ${formatDate(c.follow_up_date)}</p>` : '')}
-          ${(c.diagnosis || c.treatment) ? `
-            <div class="cons-expandable" id="cons-exp-${c.id}">
-              ${c.diagnosis ? `<p><strong>Diagnostico:</strong> <span class="cons-exp-text">${c.diagnosis}</span></p>` : ''}
-              ${c.treatment ? `<p><strong>Tratamiento:</strong> <span class="cons-exp-text">${c.treatment}</span></p>` : ''}
-            </div>
-            <button type="button" class="cons-expand-btn" onclick="toggleConsExp('${c.id}',this)" aria-expanded="false">
-              <i aria-hidden="true" class="fa-solid fa-chevron-down"></i> Ver mas
-            </button>
-          ` : ''}
-          ${docsChips}
+    <div class="cons-card">
+      <div class="cons-card-header">
+        <div class="cons-date-box">
+          <div class="cons-date-day">${day}</div>
+          <div class="cons-date-mon">${mon}</div>
         </div>
-        <div class="list-item-actions">
-          <button class="btn-secondary" onclick="showConsDocModal('${c.id}')"><i aria-hidden="true" class="fa-solid fa-paperclip"></i> Docs${consDocs.length ? ` (${consDocs.length})` : ''}</button>
-          <button class="btn-secondary" onclick="showConsultationForm('${c.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
-          <button class="btn-danger" onclick="confirmDelete('consultation','${c.id}','consulta')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
+        ${catAvatarHtml(c.cats)}
+        <div class="cons-card-info">
+          <div class="cons-card-title-row">
+            <h4>${c.cats?.name}</h4>
+            ${c.weight_at_visit ? `<span class="cons-weight-badge"><i aria-hidden="true" class="fa-solid fa-weight-scale"></i> ${c.weight_at_visit} kg</span>` : ''}
+            ${c.follow_up_date ? `<span class="cons-followup-chip ${followUpClass}"><i aria-hidden="true" class="fa-solid fa-calendar-check"></i> Seg: ${formatDate(c.follow_up_date)}</span>` : ''}
+          </div>
+          <p class="cons-vet-line">${c.veterinarians?.name || 'Sin veterinario'}${c.veterinarians?.clinic_name ? ' · ' + c.veterinarians.clinic_name : ''}</p>
+          ${c.reason ? `<p class="cons-reason"><strong>Motivo:</strong> ${c.reason}</p>` : ''}
+        </div>
+        <div class="apt-menu-wrap">
+          <button class="apt-menu-btn" onclick="toggleCardMenu(event,'cons-menu-${c.id}')" aria-label="Opciones" aria-haspopup="true">
+            <i aria-hidden="true" class="fa-solid fa-ellipsis-vertical"></i>
+          </button>
+          <div class="apt-menu-dropdown" id="cons-menu-${c.id}" role="menu">
+            <button role="menuitem" onclick="showConsultationForm('${c.id}');closeAptMenus()">
+              <i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar
+            </button>
+            <button role="menuitem" class="apt-menu-danger" onclick="confirmDelete('consultation','${c.id}','consulta');closeAptMenus()">
+              <i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar
+            </button>
+          </div>
         </div>
       </div>
-    `;
+      ${(c.diagnosis || c.treatment) ? `
+        <div class="cons-expandable" id="cons-exp-${c.id}">
+          ${c.diagnosis ? `<p><strong>Diagnóstico:</strong> ${c.diagnosis}</p>` : ''}
+          ${c.treatment ? `<p><strong>Tratamiento:</strong> ${c.treatment}</p>` : ''}
+        </div>
+        <button type="button" class="cons-expand-btn" onclick="toggleConsExp('${c.id}',this)" aria-expanded="false">
+          <i aria-hidden="true" class="fa-solid fa-chevron-down"></i>
+        </button>
+      ` : ''}
+      <div class="cons-card-footer">
+        ${consDocs.length ? `<div class="cons-docs-chips">${docsChipsHtml}</div>` : ''}
+        <button type="button" class="btn-secondary cons-add-doc-btn" onclick="showConsDocModal('${c.id}')">
+          <i aria-hidden="true" class="fa-solid fa-paperclip"></i> ${consDocs.length ? `Docs (${consDocs.length})` : 'Agregar doc'}
+        </button>
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -1132,9 +1159,7 @@ function toggleConsExp(id, btn) {
   if (!el) return;
   const expanded = el.classList.toggle('expanded');
   btn.setAttribute('aria-expanded', expanded);
-  btn.innerHTML = expanded
-    ? '<i aria-hidden="true" class="fa-solid fa-chevron-up"></i> Ver menos'
-    : '<i aria-hidden="true" class="fa-solid fa-chevron-down"></i> Ver mas';
+  btn.classList.toggle('expanded', expanded);
 }
 
 function _renderConsDocsList(consId) {

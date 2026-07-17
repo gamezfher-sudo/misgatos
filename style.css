@@ -1319,18 +1319,86 @@ h1, h2, h3, h4 {
   font-size: .9rem; line-height: 1.6;
 }
 
-/* ── Consulta expandible ── */
-.cons-expandable { display: none; }
+/* ── Consultation Card ── */
+.cons-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.cons-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+.cons-card-header {
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.cons-date-box {
+  background: var(--primary); color: white;
+  border-radius: var(--radius-lg);
+  padding: 8px 10px; text-align: center;
+  min-width: 46px; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,105,77,0.25);
+}
+.cons-date-day { font-family: 'Montserrat', sans-serif; font-size: 1.4rem; font-weight: 700; line-height: 1; }
+.cons-date-mon { font-size: 0.6rem; opacity: 0.85; margin-top: 2px; text-transform: capitalize; }
+
+.cons-card-info { flex: 1; min-width: 0; }
+.cons-card-title-row {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 3px;
+}
+.cons-card-title-row h4 { font-size: 1rem; font-weight: 700; margin: 0; }
+
+.cons-weight-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.68rem; font-weight: 600;
+  background: var(--primary-pale-solid); color: var(--primary);
+  border-radius: var(--radius-full); padding: 2px 8px;
+}
+.cons-weight-badge i { font-size: 0.6rem; }
+
+.cons-followup-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.68rem; font-weight: 600;
+  background: #f0fdf4; color: var(--primary);
+  border-radius: var(--radius-full); padding: 2px 8px;
+}
+.cons-followup-past { background: #fef2f2; color: #dc2626; }
+.cons-followup-soon { background: #fffbeb; color: #b45309; }
+
+.cons-vet-line  { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 3px; line-height: 1.5; }
+.cons-reason    { font-size: 0.82rem; color: var(--text); line-height: 1.5; }
+
+/* expandable diagnosis/treatment */
+.cons-expandable {
+  display: none;
+  margin-top: 12px; padding: 12px 14px;
+  background: var(--bg); border-radius: var(--radius-lg);
+  font-size: 0.82rem; line-height: 1.7;
+  border-left: 3px solid var(--primary);
+}
 .cons-expandable.expanded { display: block; }
+.cons-expandable p { margin: 0; }
+.cons-expandable p + p { margin-top: 6px; }
+
 .cons-expand-btn {
   background: none; border: none; cursor: pointer;
-  font-size: 0.75rem; font-weight: 600; color: var(--primary);
-  padding: 2px 0; margin-top: 2px;
-  display: inline-flex; align-items: center; gap: 4px;
-  font-family: inherit;
-  transition: opacity 0.12s;
+  font-size: 0.8rem; color: var(--primary);
+  padding: 4px 0; margin-top: 4px;
+  display: inline-flex; align-items: center;
+  font-family: inherit; transition: opacity 0.12s;
 }
-.cons-expand-btn:hover { opacity: 0.75; }
+.cons-expand-btn i { transition: transform 0.2s; }
+.cons-expand-btn.expanded i { transform: rotate(180deg); }
+.cons-expand-btn:hover { opacity: 0.7; }
+
+.cons-card-footer {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.cons-docs-chips { flex: 1; display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.cons-add-doc-btn { font-size: 0.8rem; padding: 5px 12px; flex-shrink: 0; }
 
 /* ── Recurring Vaccines/Dewormings ── */
 .recur-badge {
