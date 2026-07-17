@@ -144,21 +144,27 @@ async function createLinkedUser(e) {
   if (!email || !password) return;
 
   const btn = e.target.querySelector('button[type="submit"]');
+  const resetBtn = () => { if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-user-plus" aria-hidden="true"></i> Crear y vincular cuenta'; } };
   if (btn) { btn.disabled = true; btn.textContent = 'Creando…'; }
 
-  const { data: { session } } = await sb.auth.getSession();
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/create-linked-user`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session?.access_token}`,
-    },
-    body: JSON.stringify({ email, password, first_name, phone }),
-  });
-
-  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Crear y vincular cuenta'; }
-
-  const result = await res.json();
+  let res, result;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    res = await fetch(`${SUPABASE_URL}/functions/v1/create-linked-user`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify({ email, password, first_name, phone }),
+    });
+    result = await res.json();
+  } catch {
+    resetBtn();
+    showToast('Error de conexión', 'error');
+    return;
+  }
+  resetBtn();
   if (!res.ok || result.error) {
     const msgs = {
       email_taken:   'Ese correo ya tiene una cuenta',
