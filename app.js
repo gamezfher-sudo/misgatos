@@ -393,7 +393,7 @@ function showCatForm(catId = null) {
         </div>
         <div class="field">
           <label for="f-cat-weight"><i aria-hidden="true" class="fa-solid fa-weight-scale"></i> Peso (kg)</label>
-          <input type="number" id="f-cat-weight" name="weight" step="0.1" inputmode="decimal" autocomplete="off" value="${cat?.weight || ''}">
+          <input type="number" id="f-cat-weight" name="weight" step="any" min="0" max="30" inputmode="decimal" autocomplete="off" value="${cat?.weight || ''}">
         </div>
       </div>
       <div class="field-row">
@@ -446,13 +446,19 @@ async function saveCat(e, catId) {
   // Subir foto si hay una nueva
   const photoFile = document.getElementById('cat-photo-file')?.files[0];
   if (photoFile) {
-    const ext  = photoFile.name.split('.').pop();
+    const ext  = photoFile.name.split('.').pop().toLowerCase();
     const path = `${state.user.id}/${Date.now()}.${ext}`;
-    const { error: upErr } = await sb.storage.from('cat-photos').upload(path, photoFile, { upsert: true });
-    if (!upErr) {
-      const { data } = sb.storage.from('cat-photos').getPublicUrl(path);
-      photoUrl = data.publicUrl;
+    const { error: upErr } = await sb.storage.from('cat-photos').upload(path, photoFile, {
+      upsert: true,
+      contentType: photoFile.type,
+    });
+    if (upErr) {
+      console.error('Error subiendo foto:', upErr);
+      showToast('No se pudo subir la foto: ' + upErr.message, 'error');
+      return;
     }
+    const { data } = sb.storage.from('cat-photos').getPublicUrl(path);
+    photoUrl = data.publicUrl;
   }
 
   const payload = {
