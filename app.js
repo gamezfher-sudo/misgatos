@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = '2026-07-17 00:00';
+const BUILD         = '2026-07-16 18:00';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
