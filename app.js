@@ -449,7 +449,6 @@ async function saveCat(e, catId) {
     const ext  = photoFile.name.split('.').pop().toLowerCase();
     const path = `${state.user.id}/${Date.now()}.${ext}`;
     const { error: upErr } = await sb.storage.from('cat-photos').upload(path, photoFile, {
-      upsert: true,
       contentType: photoFile.type,
     });
     if (upErr) {
