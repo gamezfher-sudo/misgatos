@@ -1077,6 +1077,72 @@ h1, h2, h3, h4 {
 }
 .chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
+/* ── Consultation Document Attachments ── */
+.cons-docs-section {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: var(--bg-alt, var(--bg-dim));
+}
+.cons-docs-header {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.82rem; font-weight: 600; color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.btn-add-doc {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: var(--radius); cursor: pointer;
+  font-size: 0.75rem; font-weight: 600; padding: 5px 10px;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-add-doc:hover { background: var(--primary-d); }
+.cons-existing-docs { margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
+.cons-existing-doc-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.82rem; padding: 6px 8px;
+  background: #fff; border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.cons-existing-doc-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-link-sm {
+  color: var(--primary); font-size: 0.75rem; font-weight: 600;
+  text-decoration: none; white-space: nowrap;
+}
+.btn-link-sm:hover { text-decoration: underline; }
+.btn-unlink {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-light); padding: 2px 4px; border-radius: 4px;
+  display: flex; align-items: center;
+  transition: color 0.12s, background 0.12s;
+}
+.btn-unlink:hover { color: var(--danger); background: var(--danger-pale); }
+.cons-doc-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-bottom: 8px;
+}
+.cons-doc-row-fields {
+  display: flex; flex: 1; gap: 8px; flex-wrap: wrap;
+}
+.cons-doc-type-sel { flex: 0 0 110px; }
+.cons-doc-title-inp { flex: 1; min-width: 120px; }
+.cons-docs-chips {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 8px;
+}
+.cons-doc-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--primary-pale); color: var(--primary);
+  border-radius: var(--radius-full);
+  font-size: 0.72rem; font-weight: 600; padding: 3px 10px;
+  text-decoration: none; white-space: nowrap;
+  transition: background 0.12s;
+}
+.cons-doc-chip:hover { background: rgba(0,105,77,0.18); }
+.cons-doc-chip-nofile { color: var(--text-muted); background: var(--bg-dim); cursor: default; }
+
 /* ── Recurring Vaccines/Dewormings ── */
 .recur-badge {
   display: inline-flex; align-items: center; gap: 4px;

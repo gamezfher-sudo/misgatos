@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = '2026-07-16 21:00';
+const BUILD         = '2026-07-16 21:45';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -164,7 +164,7 @@ async function loadAllData() {
     sb.from('consultations').select('*, cats(name, photo_url), veterinarians(name, clinic_name)').order('visit_date', { ascending: false }),
     sb.from('vaccines').select('*, cats(name, photo_url), veterinarians(name)').order('date_applied', { ascending: false }),
     sb.from('dewormings').select('*, cats(name, photo_url), veterinarians(name)').order('date_applied', { ascending: false }),
-    sb.from('documents').select('*, cats(name)').order('created_at', { ascending: false }),
+    sb.from('documents').select('*, cats(name), consultations(visit_date, reason)').order('created_at', { ascending: false }),
   ]);
 
   state.cats          = cats.data  || [];
@@ -294,6 +294,7 @@ function getCatStatus(catId) {
 }
 
 let _catStatusFilter = 'all';
+let _consDocCounter = 0;
 
 function filterCatsByStatus(filter, btn) {
   _catStatusFilter = filter;
@@ -792,32 +793,70 @@ function renderConsultations() {
     container.innerHTML = '<div class="empty-state">Sin consultas registradas.</div>';
     return;
   }
-  container.innerHTML = list.map(c => `
-    <div class="list-item">
-      <div class="list-item-icon">${catAvatarHtml(c.cats)}</div>
-      <div class="list-item-body">
-        <h4>${c.cats?.name} — ${formatDate(c.visit_date)}</h4>
-        <p>${c.veterinarians?.name || 'Sin veterinario'} ${c.veterinarians?.clinic_name ? '· ' + c.veterinarians.clinic_name : ''}</p>
-        ${c.reason ? `<p><strong>Motivo:</strong> ${c.reason}</p>` : ''}
-        ${c.diagnosis ? `<p><strong>Diagnóstico:</strong> ${c.diagnosis}</p>` : ''}
-        ${c.treatment ? `<p><strong>Tratamiento:</strong> ${c.treatment}</p>` : ''}
-        ${c.weight_at_visit ? `<p>Peso: ${c.weight_at_visit} kg</p>` : ''}
-        ${c.follow_up_date ? `<p>Seguimiento: ${formatDate(c.follow_up_date)}</p>` : ''}
+  container.innerHTML = list.map(c => {
+    const consDocs = state.documents.filter(d => d.consultation_id === c.id);
+    const docsChips = consDocs.length ? `
+      <div class="cons-docs-chips">
+        ${consDocs.map(d => {
+          const icon = { receta: 'fa-file-prescription', analisis: 'fa-flask', rayos_x: 'fa-x-ray', otro: 'fa-file' }[d.type] || 'fa-file';
+          return d.file_url
+            ? `<a href="${d.file_url}" target="_blank" rel="noopener noreferrer" class="cons-doc-chip"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${d.title}</a>`
+            : `<span class="cons-doc-chip cons-doc-chip-nofile"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${d.title}</span>`;
+        }).join('')}
       </div>
-      <div class="list-item-actions">
-        <button class="btn-secondary" onclick="showConsultationForm('${c.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
-        <button class="btn-danger" onclick="confirmDelete('consultation','${c.id}','consulta')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
+    ` : '';
+    return `
+      <div class="list-item">
+        <div class="list-item-icon">${catAvatarHtml(c.cats)}</div>
+        <div class="list-item-body">
+          <h4>${c.cats?.name} — ${formatDate(c.visit_date)}</h4>
+          <p>${c.veterinarians?.name || 'Sin veterinario'} ${c.veterinarians?.clinic_name ? '· ' + c.veterinarians.clinic_name : ''}</p>
+          ${c.reason ? `<p><strong>Motivo:</strong> ${c.reason}</p>` : ''}
+          ${c.diagnosis ? `<p><strong>Diagnostico:</strong> ${c.diagnosis}</p>` : ''}
+          ${c.treatment ? `<p><strong>Tratamiento:</strong> ${c.treatment}</p>` : ''}
+          ${c.weight_at_visit ? `<p>Peso: ${c.weight_at_visit} kg</p>` : ''}
+          ${c.follow_up_date ? `<p>Seguimiento: ${formatDate(c.follow_up_date)}</p>` : ''}
+          ${docsChips}
+        </div>
+        <div class="list-item-actions">
+          <button class="btn-secondary" onclick="showConsultationForm('${c.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
+          <button class="btn-danger" onclick="confirmDelete('consultation','${c.id}','consulta')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function showConsultationForm(consId = null) {
+  _consDocCounter = 0;
   const c = consId ? state.consultations.find(x => x.id === consId) : null;
   const catOptions = state.cats.map(x =>
     `<option value="${x.id}" ${c?.cat_id === x.id ? 'selected' : ''}>${x.name}</option>`).join('');
   const vetOptions = '<option value="">-- Sin asignar --</option>' + state.vets.map(v =>
     `<option value="${v.id}" ${c?.vet_id === v.id ? 'selected' : ''}>${v.name}</option>`).join('');
+
+  const typeIcon  = { receta: 'fa-file-prescription', analisis: 'fa-flask', rayos_x: 'fa-x-ray', otro: 'fa-file' };
+  const typeLabel = { receta: 'Receta', analisis: 'Analisis', rayos_x: 'Rayos X', otro: 'Otro' };
+
+  const existingDocs = consId
+    ? state.documents.filter(d => d.consultation_id === consId)
+    : [];
+
+  const existingDocsHtml = existingDocs.length ? `
+    <div class="cons-existing-docs">
+      ${existingDocs.map(d => `
+        <div class="cons-existing-doc-row">
+          <i aria-hidden="true" class="fa-solid ${typeIcon[d.type] || 'fa-file'}"></i>
+          <span class="cons-existing-doc-title">${d.title}</span>
+          <span class="badge badge-gray" style="font-size:.68rem">${typeLabel[d.type] || 'Otro'}</span>
+          ${d.file_url ? `<a href="${d.file_url}" target="_blank" rel="noopener noreferrer" class="btn-link-sm">Ver</a>` : ''}
+          <button type="button" class="btn-unlink" onclick="unlinkConsDoc('${d.id}')" aria-label="Quitar documento">
+            <i aria-hidden="true" class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
 
   openModal(c ? 'Editar consulta' : 'Nueva Consulta', `
     <form onsubmit="saveConsultation(event,'${consId || ''}')">
@@ -840,7 +879,7 @@ function showConsultationForm(consId = null) {
         <input type="text" name="reason" value="${c?.reason || ''}">
       </div>
       <div class="field">
-        <label>Diagnóstico</label>
+        <label>Diagnostico</label>
         <textarea name="diagnosis">${c?.diagnosis || ''}</textarea>
       </div>
       <div class="field">
@@ -850,7 +889,7 @@ function showConsultationForm(consId = null) {
       <div class="field-row">
         <div class="field">
           <label><i aria-hidden="true" class="fa-solid fa-weight-scale"></i> Peso (kg)</label>
-          <input type="number" name="weight_at_visit" step="0.1" inputmode="decimal" autocomplete="off" value="${c?.weight_at_visit || ''}">
+          <input type="number" name="weight_at_visit" step="any" min="0" max="30" inputmode="decimal" autocomplete="off" value="${c?.weight_at_visit || ''}">
         </div>
         <div class="field">
           <label><i aria-hidden="true" class="fa-solid fa-temperature-half"></i> Temperatura (C)</label>
@@ -865,6 +904,16 @@ function showConsultationForm(consId = null) {
         <label>Notas</label>
         <textarea name="notes">${c?.notes || ''}</textarea>
       </div>
+      <div class="cons-docs-section">
+        <div class="cons-docs-header">
+          <span><i aria-hidden="true" class="fa-solid fa-paperclip"></i> Documentos adjuntos</span>
+          <button type="button" class="btn-add-doc" onclick="addConsDocRow()">
+            <i aria-hidden="true" class="fa-solid fa-plus"></i> Agregar
+          </button>
+        </div>
+        ${existingDocsHtml}
+        <div id="cons-doc-rows"></div>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" onclick="closeModalDirect()"><i aria-hidden="true" class="fa-solid fa-xmark"></i> Cancelar</button>
         <button type="submit" class="btn-primary"><i aria-hidden="true" class="fa-solid fa-floppy-disk"></i> Guardar</button>
@@ -873,13 +922,50 @@ function showConsultationForm(consId = null) {
   `);
 }
 
+function addConsDocRow() {
+  const container = document.getElementById('cons-doc-rows');
+  if (!container) return;
+  const idx = _consDocCounter++;
+  const row = document.createElement('div');
+  row.className = 'cons-doc-row';
+  row.id = `cons-doc-row-${idx}`;
+  row.innerHTML = `
+    <div class="cons-doc-row-fields">
+      <select id="cons-doc-type-${idx}" class="cons-doc-type-sel">
+        <option value="otro">Otro</option>
+        <option value="receta">Receta</option>
+        <option value="analisis">Analisis</option>
+        <option value="rayos_x">Rayos X</option>
+      </select>
+      <input type="text" id="cons-doc-title-${idx}" class="cons-doc-title-inp" placeholder="Titulo (opcional)">
+      <input type="file" id="cons-doc-file-${idx}" accept="image/*,.pdf">
+    </div>
+    <button type="button" class="btn-unlink" onclick="document.getElementById('cons-doc-row-${idx}').remove()" aria-label="Quitar fila">
+      <i aria-hidden="true" class="fa-solid fa-xmark"></i>
+    </button>
+  `;
+  container.appendChild(row);
+}
+
+async function unlinkConsDoc(docId) {
+  const { error } = await sb.from('documents').update({ consultation_id: null }).eq('id', docId);
+  if (error) return showToast('Error: ' + error.message, 'error');
+  await loadAllData();
+  // Re-render the existing docs section without closing the modal
+  const existingSection = document.querySelector('.cons-existing-docs');
+  if (existingSection) existingSection.remove();
+  showToast('Documento desvinculado', 'success');
+}
+
 async function saveConsultation(e, consId) {
   e.preventDefault();
   const fd = new FormData(e.target);
+  const catId = fd.get('cat_id');
+  const visitDate = fd.get('visit_date');
   const payload = {
-    cat_id:          fd.get('cat_id'),
+    cat_id:          catId,
     vet_id:          fd.get('vet_id') || null,
-    visit_date:      fd.get('visit_date'),
+    visit_date:      visitDate,
     reason:          fd.get('reason') || null,
     diagnosis:       fd.get('diagnosis') || null,
     treatment:       fd.get('treatment') || null,
@@ -888,14 +974,48 @@ async function saveConsultation(e, consId) {
     follow_up_date:  fd.get('follow_up_date') || null,
     notes:           fd.get('notes') || null,
   };
-  let err;
+
+  let savedId = consId;
   if (consId) {
-    ({ error: err } = await sb.from('consultations').update(payload).eq('id', consId));
+    const { error: err } = await sb.from('consultations').update(payload).eq('id', consId);
+    if (err) return showToast('Error: ' + err.message, 'error');
   } else {
-    ({ error: err } = await sb.from('consultations').insert(payload));
+    const { data, error: err } = await sb.from('consultations').insert(payload).select('id').single();
+    if (err) return showToast('Error: ' + err.message, 'error');
+    savedId = data.id;
   }
-  if (err) return showToast('Error: ' + err.message, 'error');
-  showToast('Consulta guardada', 'success');
+
+  // Upload pending document rows
+  const rows = document.querySelectorAll('.cons-doc-row');
+  let docErrors = 0;
+  for (const row of rows) {
+    const rowId = row.id.replace('cons-doc-row-', '');
+    const fileEl  = document.getElementById(`cons-doc-file-${rowId}`);
+    const typeEl  = document.getElementById(`cons-doc-type-${rowId}`);
+    const titleEl = document.getElementById(`cons-doc-title-${rowId}`);
+    const file = fileEl?.files[0];
+    if (!file) continue;
+
+    const ext  = file.name.split('.').pop();
+    const path = `${state.user.id}/${Date.now()}_${rowId}.${ext}`;
+    const { error: upErr } = await sb.storage.from('medical-docs').upload(path, file, { upsert: true });
+    if (upErr) { docErrors++; continue; }
+    const { data: urlData } = await sb.storage.from('medical-docs').createSignedUrl(path, 60 * 60 * 24 * 365);
+
+    const title = titleEl?.value?.trim() || file.name.replace(/\.[^.]+$/, '');
+    await sb.from('documents').insert({
+      cat_id:          catId,
+      consultation_id: savedId,
+      type:            typeEl?.value || 'otro',
+      title,
+      date_issued:     visitDate || null,
+      file_url:        urlData?.signedUrl || null,
+      file_type:       file.type,
+    });
+  }
+
+  if (docErrors > 0) showToast(`Consulta guardada (${docErrors} archivo(s) fallaron)`, 'error');
+  else showToast('Consulta guardada', 'success');
   closeModalDirect();
   await loadAllData();
   renderConsultations();
