@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'e';
+const BUILD         = 'f';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -89,7 +89,10 @@ async function handleLogout() {
 // ──────────────────────────────────────────────
 // PERFIL DE USUARIO
 // ──────────────────────────────────────────────
-function renderProfile() {
+async function renderProfile() {
+  // Obtener datos frescos del servidor para evitar caché local de Supabase
+  const { data } = await sb.auth.getUser();
+  if (data?.user) state.user = data.user;
   const meta = state.user?.user_metadata || {};
   const emailEl = document.getElementById('prof-email');
   const nameEl  = document.getElementById('prof-name');
@@ -112,8 +115,13 @@ async function saveProfile(e) {
     }
   });
   if (error) return showToast('Error: ' + error.message, 'error');
-  // Actualizar estado local
-  state.user = (await sb.auth.getUser()).data.user;
+  // Actualizar estado local y sidebar
+  const { data } = await sb.auth.getUser();
+  if (data?.user) state.user = data.user;
+  const meta2 = state.user?.user_metadata || {};
+  const displayName = [meta2.first_name, meta2.last_name].filter(Boolean).join(' ') || state.user?.email;
+  const el = document.getElementById('user-email-display');
+  if (el) el.textContent = displayName;
   showToast('Datos guardados', 'success');
 }
 
