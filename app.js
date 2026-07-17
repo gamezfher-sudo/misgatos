@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = '2026-07-16 21:45';
+const BUILD         = '2026-07-16 22:00';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -1672,6 +1672,7 @@ function calcAge(birthdate) {
   let years   = now.getFullYear() - birth.getFullYear();
   let months  = now.getMonth() - birth.getMonth();
   if (months < 0) { years--; months += 12; }
+  if (years > 0 && months > 0) return `${years} año${years > 1 ? 's' : ''} ${months} mes${months !== 1 ? 'es' : ''}`;
   if (years > 0) return `${years} año${years > 1 ? 's' : ''}`;
   return `${months} mes${months !== 1 ? 'es' : ''}`;
 }
