@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = '2026-07-16 20:30';
+const BUILD         = '2026-07-16 21:00';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -161,9 +161,9 @@ async function loadAllData() {
     sb.from('cats').select('*').eq('user_id', uid).order('name'),
     sb.from('veterinarians').select('*').eq('user_id', uid).order('name'),
     sb.from('appointments').select('*, cats(name, photo_url), veterinarians(name, clinic_name, address, phone)').order('appointment_date'),
-    sb.from('consultations').select('*, cats(name), veterinarians(name, clinic_name)').order('visit_date', { ascending: false }),
-    sb.from('vaccines').select('*, cats(name), veterinarians(name)').order('date_applied', { ascending: false }),
-    sb.from('dewormings').select('*, cats(name), veterinarians(name)').order('date_applied', { ascending: false }),
+    sb.from('consultations').select('*, cats(name, photo_url), veterinarians(name, clinic_name)').order('visit_date', { ascending: false }),
+    sb.from('vaccines').select('*, cats(name, photo_url), veterinarians(name)').order('date_applied', { ascending: false }),
+    sb.from('dewormings').select('*, cats(name, photo_url), veterinarians(name)').order('date_applied', { ascending: false }),
     sb.from('documents').select('*, cats(name)').order('created_at', { ascending: false }),
   ]);
 
@@ -679,6 +679,7 @@ function renderAppointments() {
         <div class="apt-date-mon">${mon}</div>
         <div class="apt-date-yr">${yr}</div>
       </div>
+      ${catAvatarHtml(a.cats)}
       <div class="apt-info">
         <h4>${a.cats?.name} — ${vetName}</h4>
         <p class="apt-time"><i aria-hidden="true" class="fa-solid fa-clock"></i> ${formatTime(a.appointment_time)}</p>
@@ -793,7 +794,7 @@ function renderConsultations() {
   }
   container.innerHTML = list.map(c => `
     <div class="list-item">
-      <div class="list-item-icon"><i aria-hidden="true" class="fa-solid fa-notes-medical"></i></div>
+      <div class="list-item-icon">${catAvatarHtml(c.cats)}</div>
       <div class="list-item-body">
         <h4>${c.cats?.name} — ${formatDate(c.visit_date)}</h4>
         <p>${c.veterinarians?.name || 'Sin veterinario'} ${c.veterinarians?.clinic_name ? '· ' + c.veterinarians.clinic_name : ''}</p>
@@ -927,7 +928,7 @@ function renderVaccines() {
       : '';
 
     return `<div class="list-item">
-      <div class="list-item-icon"><i aria-hidden="true" class="fa-solid fa-syringe"></i></div>
+      <div class="list-item-icon">${catAvatarHtml(v.cats)}</div>
       <div class="list-item-body">
         <h4>${v.vaccine_name} &mdash; ${v.cats?.name} ${recurBadge}</h4>
         <p>Aplicada: ${formatDate(v.date_applied)} &mdash; ${v.veterinarians?.name || '&mdash;'}</p>
@@ -1079,7 +1080,7 @@ function renderDewormings() {
       : '';
 
     return `<div class="list-item">
-      <div class="list-item-icon"><i aria-hidden="true" class="fa-solid fa-tablets"></i></div>
+      <div class="list-item-icon">${catAvatarHtml(d.cats)}</div>
       <div class="list-item-body">
         <h4>${d.product_name} &mdash; ${d.cats?.name} ${recurBadge}</h4>
         <p>${formatDate(d.date_applied)} &mdash; ${typeLabel}${d.dose ? ' &middot; Dosis: ' + d.dose : ''}</p>
@@ -1522,6 +1523,14 @@ function daysDiff(from, to) {
 }
 
 const _dtf = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' });
+function catAvatarHtml(catObj) {
+  if (!catObj) return '<div class="cat-avatar-sm cat-avatar-placeholder"><i class="fa-solid fa-cat" aria-hidden="true"></i></div>';
+  if (catObj.photo_url) {
+    return `<img src="${catObj.photo_url}" alt="${catObj.name}" class="cat-avatar-sm" loading="lazy">`;
+  }
+  return `<div class="cat-avatar-sm cat-avatar-placeholder"><i class="fa-solid fa-cat" aria-hidden="true"></i></div>`;
+}
+
 function formatDate(str) {
   if (!str) return '—';
   return _dtf.format(new Date(str + 'T00:00:00'));
