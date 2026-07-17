@@ -72,8 +72,10 @@
   <!-- SIDEBAR -->
   <aside id="sidebar" aria-label="Navegacion principal">
     <div class="sidebar-header">
-      <span class="logo-badge" aria-hidden="true">MG</span>
-      <span class="logo-text">MisGatos</span>
+      <div class="sidebar-brand">
+        <span class="logo-badge" aria-hidden="true">MG</span>
+        <span class="logo-text">MisGatos</span>
+      </div>
     </div>
 
     <nav class="sidebar-nav">
@@ -100,6 +102,9 @@
       </a>
       <a href="#" class="nav-item" data-section="documents">
         <i class="fa-solid fa-folder-open nav-icon" aria-hidden="true"></i><span class="nav-label">Documentos</span>
+      </a>
+      <a href="#" class="nav-item" data-section="profile">
+        <i class="fa-solid fa-circle-user nav-icon" aria-hidden="true"></i><span class="nav-label">Mi perfil</span>
       </a>
     </nav>
 
@@ -316,6 +321,61 @@
       </div>
     </section>
 
+    <!-- PERFIL -->
+    <section id="s-profile" class="section hidden">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-circle-user" aria-hidden="true"></i> Mi perfil</h2>
+      </div>
+      <div class="profile-grid">
+        <!-- Datos personales -->
+        <div class="profile-card">
+          <h3 class="profile-card-title"><i class="fa-solid fa-user" aria-hidden="true"></i> Datos personales</h3>
+          <form id="profile-form" onsubmit="saveProfile(event)">
+            <div class="field-row">
+              <div class="field">
+                <label for="prof-name">Nombre</label>
+                <input type="text" id="prof-name" name="first_name" autocomplete="given-name" placeholder="Tu nombre">
+              </div>
+              <div class="field">
+                <label for="prof-lastname">Apellidos</label>
+                <input type="text" id="prof-lastname" name="last_name" autocomplete="family-name" placeholder="Tus apellidos">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="prof-phone"><i class="fa-solid fa-phone" aria-hidden="true"></i> Teléfono</label>
+                <input type="tel" id="prof-phone" name="phone" autocomplete="tel" placeholder="+52 55 0000 0000">
+              </div>
+              <div class="field">
+                <label for="prof-email"><i class="fa-solid fa-envelope" aria-hidden="true"></i> Correo</label>
+                <input type="email" id="prof-email" name="email" autocomplete="email" spellcheck="false" disabled>
+              </div>
+            </div>
+            <div class="modal-actions" style="justify-content:flex-start;margin-top:4px">
+              <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Guardar datos</button>
+            </div>
+          </form>
+        </div>
+        <!-- Cambiar contraseña -->
+        <div class="profile-card">
+          <h3 class="profile-card-title"><i class="fa-solid fa-lock" aria-hidden="true"></i> Cambiar contraseña</h3>
+          <form id="password-form" onsubmit="savePassword(event)">
+            <div class="field">
+              <label for="prof-new-pass">Nueva contraseña</label>
+              <input type="password" id="prof-new-pass" name="new_password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+            </div>
+            <div class="field">
+              <label for="prof-confirm-pass">Confirmar contraseña</label>
+              <input type="password" id="prof-confirm-pass" name="confirm_password" autocomplete="new-password" placeholder="Repite la contraseña" minlength="6" required>
+            </div>
+            <div class="modal-actions" style="justify-content:flex-start;margin-top:4px">
+              <button type="submit" class="btn-primary"><i class="fa-solid fa-key" aria-hidden="true"></i> Cambiar contraseña</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
 
@@ -333,13 +393,13 @@
 </div>
 
 <!-- FABs -->
-<button id="fab-add-cat"          class="fab hidden" onclick="showCatForm()"          aria-label="Agregar gato">         <i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Agregar Gato</span></button>
-<button id="fab-add-vet"          class="fab hidden" onclick="showVetForm()"          aria-label="Agregar veterinario">   <i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Agregar Veterinario</span></button>
-<button id="fab-add-appointment"  class="fab hidden" onclick="showAppointmentForm()"  aria-label="Nueva cita">            <i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Nueva Cita</span></button>
-<button id="fab-add-consultation" class="fab hidden" onclick="showConsultationForm()" aria-label="Nueva consulta">        <i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Nueva Consulta</span></button>
-<button id="fab-add-vaccine"      class="fab hidden" onclick="showVaccineForm()"      aria-label="Registrar vacuna">      <i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Registrar Vacuna</span></button>
-<button id="fab-add-deworming"    class="fab hidden" onclick="showDewormingForm()"    aria-label="Registrar desparasitacion"><i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Registrar Desparasitacion</span></button>
-<button id="fab-add-document"     class="fab hidden" onclick="showDocumentForm()"     aria-label="Subir documento">       <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i><span class="fab-tooltip">Subir Documento</span></button>
+<button id="fab-add-cat"          class="fab hidden" onclick="showCatForm()"          aria-label="Agregar gato">            <i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Agregar gato</span></button>
+<button id="fab-add-vet"          class="fab hidden" onclick="showVetForm()"          aria-label="Agregar veterinario">      <i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Agregar veterinario</span></button>
+<button id="fab-add-appointment"  class="fab hidden" onclick="showAppointmentForm()"  aria-label="Nueva cita">               <i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Nueva cita</span></button>
+<button id="fab-add-consultation" class="fab hidden" onclick="showConsultationForm()" aria-label="Nueva consulta">           <i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Nueva consulta</span></button>
+<button id="fab-add-vaccine"      class="fab hidden" onclick="showVaccineForm()"      aria-label="Registrar vacuna">         <i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Registrar vacuna</span></button>
+<button id="fab-add-deworming"    class="fab hidden" onclick="showDewormingForm()"    aria-label="Registrar desparasitacion"><i class="fa-solid fa-plus" aria-hidden="true"></i><span class="fab-tooltip">Registrar desparasitacion</span></button>
+<button id="fab-add-document"     class="fab hidden" onclick="showDocumentForm()"     aria-label="Subir documento">          <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i><span class="fab-tooltip">Subir documento</span></button>
 
 <!-- MOBILE NAV -->
 <nav class="mobile-nav" aria-label="Navegacion principal">

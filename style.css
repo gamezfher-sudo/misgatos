@@ -355,24 +355,25 @@ h1, h2, h3, h4 {
 }
 
 .sidebar-header {
-  padding: 28px 24px 20px;
+  padding: 22px 24px 18px;
   border-bottom: 1px solid var(--border-subtle);
 }
+.sidebar-brand {
+  display: flex; align-items: center; gap: 10px;
+}
 .logo-badge {
-  display: inline-block;
-  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px;
   border-radius: var(--radius);
   background: var(--primary);
   color: white;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.8rem; font-weight: 700;
-  line-height: 32px; text-align: center;
-  margin-bottom: 12px;
+  font-size: 0.78rem; font-weight: 700;
+  flex-shrink: 0;
 }
 .logo-text {
-  display: block;
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--primary);
   letter-spacing: -0.02em;
@@ -1308,6 +1309,28 @@ h1, h2, h3, h4 {
 .mobile-nav-item.active { color: var(--primary); font-weight: 600; }
 .mobile-nav-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
+/* ── Perfil ── */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  max-width: 900px;
+}
+.profile-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 28px 28px 24px;
+  box-shadow: var(--shadow);
+}
+.profile-card-title {
+  font-size: 1rem; font-weight: 700;
+  color: var(--text);
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.profile-card-title i { color: var(--primary); font-size: 0.9rem; }
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */
@@ -1410,6 +1433,10 @@ h1, h2, h3, h4 {
   /* ── Filtros ── */
   .section-filters { gap: 8px; }
   .section-filters select { font-size: 0.85rem; }
+
+  /* ── Perfil ── */
+  .profile-grid { grid-template-columns: 1fr; gap: 16px; }
+  .profile-card { padding: 20px 16px; }
 }
 
 @media (max-width: 480px) {

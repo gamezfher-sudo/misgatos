@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'd';
+const BUILD         = 'e';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -33,7 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
   sb.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
       state.user = session.user;
-      document.getElementById('user-email-display').textContent = session.user.email;
+      const meta = session.user?.user_metadata || {};
+      const displayName = [meta.first_name, meta.last_name].filter(Boolean).join(' ') || session.user.email;
+      document.getElementById('user-email-display').textContent = displayName;
       showApp();
       await loadAllData();
       navigate('dashboard');
@@ -82,6 +84,49 @@ async function handleRegister(e) {
 
 async function handleLogout() {
   await sb.auth.signOut();
+}
+
+// ──────────────────────────────────────────────
+// PERFIL DE USUARIO
+// ──────────────────────────────────────────────
+function renderProfile() {
+  const meta = state.user?.user_metadata || {};
+  const emailEl = document.getElementById('prof-email');
+  const nameEl  = document.getElementById('prof-name');
+  const lastEl  = document.getElementById('prof-lastname');
+  const phoneEl = document.getElementById('prof-phone');
+  if (emailEl) emailEl.value = state.user?.email || '';
+  if (nameEl)  nameEl.value  = meta.first_name || '';
+  if (lastEl)  lastEl.value  = meta.last_name  || '';
+  if (phoneEl) phoneEl.value = meta.phone       || '';
+}
+
+async function saveProfile(e) {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const { error } = await sb.auth.updateUser({
+    data: {
+      first_name: fd.get('first_name') || '',
+      last_name:  fd.get('last_name')  || '',
+      phone:      fd.get('phone')      || '',
+    }
+  });
+  if (error) return showToast('Error: ' + error.message, 'error');
+  // Actualizar estado local
+  state.user = (await sb.auth.getUser()).data.user;
+  showToast('Datos guardados', 'success');
+}
+
+async function savePassword(e) {
+  e.preventDefault();
+  const form    = e.target;
+  const newPass = form.querySelector('[name="new_password"]').value;
+  const confirm = form.querySelector('[name="confirm_password"]').value;
+  if (newPass !== confirm) return showToast('Las contraseñas no coinciden', 'error');
+  const { error } = await sb.auth.updateUser({ password: newPass });
+  if (error) return showToast('Error: ' + error.message, 'error');
+  showToast('Contraseña actualizada', 'success');
+  form.reset();
 }
 
 function showAuthError(msg, isError = true) {
@@ -153,6 +198,7 @@ function navigate(section) {
     vaccines:      renderVaccines,
     dewormings:    renderDewormings,
     documents:     renderDocuments,
+    profile:       renderProfile,
   };
   if (renders[section]) renders[section]();
 }
