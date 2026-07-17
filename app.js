@@ -326,15 +326,15 @@ function renderCats() {
         ${c.photo_url
           ? `<img src="${c.photo_url}" alt="${c.name}" loading="lazy">`
           : '<div class="cat-no-photo"><i aria-hidden="true" class="fa-solid fa-cat"></i></div>'}
-        <div class="cat-status-pill">
-          <span class="status-dot status-${status.cls}"></span>${status.label}
-        </div>
       </div>
       <div class="cat-card-body">
         <div class="cat-card-name-row">
           <div>
             <div class="cat-card-name">${c.name}</div>
             <div class="cat-card-info">${info}</div>
+            <div class="cat-status-pill">
+              <span class="status-dot status-${status.cls}"></span>${status.label}
+            </div>
           </div>
           <div class="cat-card-icon-btns">
             <button class="cat-icon-btn" onclick="showCatDetail('${c.id}')" aria-label="Ver detalle de ${c.name}" title="Ver detalle">
