@@ -285,12 +285,12 @@ async function loadDashboard() {
   // Welcome section
   const welcomeEl = document.getElementById('dash-welcome');
   if (welcomeEl) {
-    const email = state.user?.email || '';
-    const name  = email.split('@')[0];
+    const meta  = state.user?.user_metadata || {};
+    const name  = meta.first_name || state.user?.email?.split('@')[0] || '';
     const dateStr = new Intl.DateTimeFormat('es', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
     welcomeEl.innerHTML = `
       <div>
-        <h1>Hola, ${name}.</h1>
+        <h1>Hola, ${name} 👋</h1>
         <p>Resumen del bienestar de tus gatos.</p>
       </div>
       <div class="date-chip">
