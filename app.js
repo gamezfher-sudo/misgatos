@@ -136,24 +136,44 @@ async function renderLinkedAccounts() {
   `).join('');
 }
 
-async function linkAccount(e) {
+async function createLinkedUser(e) {
   e.preventDefault();
-  const input = document.getElementById('link-email-input');
-  const email = input?.value?.trim();
-  if (!email) return;
+  const email      = document.getElementById('link-email-input')?.value?.trim();
+  const password   = document.getElementById('link-pass-input')?.value;
+  const first_name = document.getElementById('link-name-input')?.value?.trim();
+  const phone      = document.getElementById('link-phone-input')?.value?.trim();
+  if (!email || !password) return;
+
   const btn = e.target.querySelector('button[type="submit"]');
-  if (btn) btn.disabled = true;
-  const { data, error } = await sb.rpc('link_account', { p_email: email });
-  if (btn) btn.disabled = false;
-  if (error) { showToast('Error al vincular cuenta', 'error'); return; }
-  const msgs = {
-    ok:             'Cuenta vinculada correctamente',
-    not_found:      'No existe una cuenta con ese correo',
-    self:           'No puedes vincularte a ti mismo',
-    already_linked: 'Esa cuenta ya está vinculada',
-  };
-  showToast(msgs[data] || 'Error desconocido', data === 'ok' ? 'success' : 'error');
-  if (data === 'ok') { if (input) input.value = ''; await renderLinkedAccounts(); }
+  if (btn) { btn.disabled = true; btn.textContent = 'Creando…'; }
+
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/create-linked-user`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session?.access_token}`,
+    },
+    body: JSON.stringify({ email, password, first_name, phone }),
+  });
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Crear y vincular cuenta'; }
+
+  const result = await res.json();
+  if (!res.ok || result.error) {
+    const msgs = {
+      email_taken:   'Ese correo ya tiene una cuenta',
+      missing_fields: 'Correo y contraseña son obligatorios',
+      create_error:  'Error al crear la cuenta',
+      unauthorized:  'Sesión expirada, recarga la página',
+    };
+    showToast(msgs[result.error] || 'Error desconocido', 'error');
+    return;
+  }
+
+  showToast(`Cuenta creada y vinculada: ${result.email}`, 'success');
+  e.target.reset();
+  await renderLinkedAccounts();
 }
 
 async function unlinkAccount(linkedId) {

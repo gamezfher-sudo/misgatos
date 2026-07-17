@@ -380,15 +380,33 @@
             Las cuentas vinculadas pueden ver y editar los mismos gatos, citas e historial. Los recordatorios por correo se envían a todos.
           </p>
           <div id="linked-accounts-list" style="margin-bottom:16px"></div>
-          <form onsubmit="linkAccount(event)">
+          <form onsubmit="createLinkedUser(event)">
+            <div class="pfield" style="margin-bottom:10px">
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+                <input type="text" id="link-name-input" autocomplete="given-name" placeholder="Nombre (opcional)">
+              </div>
+            </div>
             <div class="pfield" style="margin-bottom:10px">
               <div class="pfield-wrap">
                 <i class="fa-solid fa-at" aria-hidden="true"></i>
                 <input type="email" id="link-email-input" autocomplete="off" spellcheck="false" placeholder="correo@ejemplo.com" required>
               </div>
             </div>
+            <div class="pfield" style="margin-bottom:10px">
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
+                <input type="tel" id="link-phone-input" autocomplete="off" placeholder="Celular (opcional)">
+              </div>
+            </div>
+            <div class="pfield" style="margin-bottom:10px">
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                <input type="password" id="link-pass-input" autocomplete="new-password" placeholder="Contraseña" minlength="6" required>
+              </div>
+            </div>
             <button type="submit" class="btn-primary pfield-btn">
-              <i class="fa-solid fa-link" aria-hidden="true"></i> Vincular cuenta
+              <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Crear y vincular cuenta
             </button>
           </form>
         </div>
