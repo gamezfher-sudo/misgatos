@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (session?.user) {
       state.user = session.user;
       const meta = session.user?.user_metadata || {};
-      const displayName = [meta.first_name, meta.last_name].filter(Boolean).join(' ') || session.user.email;
+      const displayName = meta.first_name || session.user.email;
       document.getElementById('user-email-display').textContent = displayName;
       showApp();
       await loadAllData();
@@ -119,7 +119,7 @@ async function saveProfile(e) {
   const { data } = await sb.auth.getUser();
   if (data?.user) state.user = data.user;
   const meta2 = state.user?.user_metadata || {};
-  const displayName = [meta2.first_name, meta2.last_name].filter(Boolean).join(' ') || state.user?.email;
+  const displayName = meta2.first_name || state.user?.email;
   const el = document.getElementById('user-email-display');
   if (el) el.textContent = displayName;
   showToast('Datos guardados', 'success');

@@ -303,18 +303,18 @@ h1, h2, h3, h4 {
 .btn-vet-email:focus-visible { outline: 2px solid #7B3FA0; outline-offset: 2px; }
 
 .btn-logout {
-  display: flex; align-items: center; gap: 8px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--primary);
+  border: none;
+  color: white;
   border-radius: var(--radius);
-  padding: 8px 12px; cursor: pointer;
-  font-size: 0.8rem; font-weight: 500;
+  padding: 9px 12px; cursor: pointer;
+  font-size: 0.82rem; font-weight: 600;
   font-family: 'Inter', sans-serif;
-  margin-top: 8px; width: 100%;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  width: 100%;
+  transition: background 0.15s;
 }
-.btn-logout:hover { background: var(--danger-pale); color: var(--danger); border-color: transparent; }
+.btn-logout:hover { background: var(--primary-d); }
 .btn-logout:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .btn-icon {
@@ -380,8 +380,7 @@ h1, h2, h3, h4 {
 }
 
 .sidebar-nav {
-  flex: 1;
-  padding: 12px 12px;
+  padding: 12px;
   overflow-y: auto;
 }
 .sidebar-nav::-webkit-scrollbar { width: 0; }
@@ -421,15 +420,16 @@ h1, h2, h3, h4 {
 .nav-item.active .nav-icon { color: var(--primary); }
 
 .sidebar-footer {
-  padding: 16px 24px 24px;
+  padding: 14px 12px 18px;
   border-top: 1px solid var(--border-subtle);
 }
 .user-email {
   display: block;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  word-break: break-all;
-  margin-bottom: 4px;
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding: 0 2px;
 }
 .build-label {
   display: block;
@@ -437,6 +437,7 @@ h1, h2, h3, h4 {
   font-size: 0.65rem;
   margin-top: 8px;
   letter-spacing: 0.03em;
+  padding: 0 2px;
 }
 
 /* ── Main Content ── */
