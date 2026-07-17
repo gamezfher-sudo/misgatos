@@ -1550,6 +1550,41 @@ h1, h2, h3, h4 {
 }
 .profile-card-title i { color: var(--primary); font-size: 0.9rem; }
 
+/* ── Profile Fields ── */
+.pfield { margin-bottom: 18px; }
+.pfield-label {
+  display: block;
+  font-size: 0.88rem; font-weight: 600;
+  color: var(--text); margin-bottom: 8px;
+}
+.pfield-wrap {
+  position: relative; display: flex; align-items: center;
+}
+.pfield-wrap i {
+  position: absolute; left: 14px;
+  color: var(--text-light); font-size: 0.85rem;
+  pointer-events: none; z-index: 1;
+}
+.pfield-wrap input {
+  width: 100%; padding: 13px 14px 13px 40px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px; background: var(--bg);
+  font-size: 0.92rem; font-family: 'Inter', sans-serif;
+  color: var(--text); outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.pfield-wrap input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0,105,77,0.1);
+}
+.pfield-wrap-disabled { opacity: 0.6; }
+.pfield-wrap-disabled input { cursor: not-allowed; background: var(--bg); }
+.pfield-btn {
+  width: 100%; justify-content: center;
+  padding: 13px; font-size: 0.95rem;
+  border-radius: 12px; margin-top: 6px;
+}
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */

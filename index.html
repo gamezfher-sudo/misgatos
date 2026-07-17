@@ -337,29 +337,37 @@
       <div class="profile-tab-pane" id="profile-tab-datos" role="tabpanel">
         <div class="profile-card">
           <form id="profile-form" onsubmit="saveProfile(event)">
-            <div class="field-row">
-              <div class="field">
-                <label for="prof-name">Nombre</label>
-                <input type="text" id="prof-name" name="first_name" autocomplete="given-name" placeholder="Tu nombre">
-              </div>
-              <div class="field">
-                <label for="prof-lastname">Apellidos</label>
-                <input type="text" id="prof-lastname" name="last_name" autocomplete="family-name" placeholder="Tus apellidos">
+            <div class="pfield">
+              <label class="pfield-label" for="prof-name">Nombre</label>
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+                <input type="text" id="prof-name" name="first_name" autocomplete="given-name" placeholder="Ej. Fernando">
               </div>
             </div>
-            <div class="field-row">
-              <div class="field">
-                <label for="prof-phone"><i class="fa-solid fa-phone" aria-hidden="true"></i> Teléfono</label>
+            <div class="pfield">
+              <label class="pfield-label" for="prof-lastname">Apellidos</label>
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-id-card" aria-hidden="true"></i>
+                <input type="text" id="prof-lastname" name="last_name" autocomplete="family-name" placeholder="Ej. García López">
+              </div>
+            </div>
+            <div class="pfield">
+              <label class="pfield-label" for="prof-phone">Celular</label>
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
                 <input type="tel" id="prof-phone" name="phone" autocomplete="tel" placeholder="+52 55 0000 0000">
               </div>
-              <div class="field">
-                <label for="prof-email"><i class="fa-solid fa-envelope" aria-hidden="true"></i> Correo</label>
+            </div>
+            <div class="pfield">
+              <label class="pfield-label" for="prof-email">Correo electrónico</label>
+              <div class="pfield-wrap pfield-wrap-disabled">
+                <i class="fa-solid fa-envelope" aria-hidden="true"></i>
                 <input type="email" id="prof-email" name="email" autocomplete="email" spellcheck="false" disabled>
               </div>
             </div>
-            <div class="modal-actions" style="justify-content:flex-start;margin-top:4px">
-              <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Guardar datos</button>
-            </div>
+            <button type="submit" class="btn-primary pfield-btn">
+              <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Guardar datos
+            </button>
           </form>
         </div>
       </div>
@@ -367,19 +375,24 @@
       <!-- Pestaña: Seguridad -->
       <div class="profile-tab-pane hidden" id="profile-tab-seguridad" role="tabpanel">
         <div class="profile-card">
-          <h3 class="profile-card-title"><i class="fa-solid fa-key" aria-hidden="true"></i> Contraseña</h3>
           <form id="password-form" onsubmit="savePassword(event)">
-            <div class="field">
-              <label for="prof-new-pass">Nueva contraseña</label>
-              <input type="password" id="prof-new-pass" name="new_password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+            <div class="pfield">
+              <label class="pfield-label" for="prof-new-pass">Nueva contraseña</label>
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                <input type="password" id="prof-new-pass" name="new_password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+              </div>
             </div>
-            <div class="field">
-              <label for="prof-confirm-pass">Confirmar contraseña</label>
-              <input type="password" id="prof-confirm-pass" name="confirm_password" autocomplete="new-password" placeholder="Repite la contraseña" minlength="6" required>
+            <div class="pfield">
+              <label class="pfield-label" for="prof-confirm-pass">Confirmar contraseña</label>
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-lock-open" aria-hidden="true"></i>
+                <input type="password" id="prof-confirm-pass" name="confirm_password" autocomplete="new-password" placeholder="Repite la contraseña" minlength="6" required>
+              </div>
             </div>
-            <div class="modal-actions" style="justify-content:flex-start;margin-top:4px">
-              <button type="submit" class="btn-primary"><i class="fa-solid fa-lock" aria-hidden="true"></i> Cambiar contraseña</button>
-            </div>
+            <button type="submit" class="btn-primary pfield-btn">
+              <i class="fa-solid fa-key" aria-hidden="true"></i> Cambiar contraseña
+            </button>
           </form>
         </div>
       </div>
