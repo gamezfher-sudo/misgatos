@@ -954,7 +954,11 @@ function renderConsultations() {
     const visitD     = new Date(c.visit_date + 'T00:00:00');
     const day        = visitD.getDate();
     const mon        = visitD.toLocaleString('es', { month: 'short' });
+    const yr         = visitD.getFullYear();
     const today      = todayStr();
+    const catPhotoHtml = c.cats?.photo_url
+      ? `<img src="${c.cats.photo_url}" alt="${c.cats.name}" class="apt-date-cat-img">`
+      : `<div class="apt-date-cat-img apt-date-cat-icon"><i aria-hidden="true" class="fa-solid fa-cat"></i></div>`;
 
     const followUpClass = c.follow_up_date
       ? (c.follow_up_date < today ? 'cons-followup-past' : c.follow_up_date <= daysFromNow(7) ? 'cons-followup-soon' : '')
@@ -970,11 +974,12 @@ function renderConsultations() {
     return `
     <div class="cons-card">
       <div class="cons-card-header">
-        <div class="cons-date-box">
-          <div class="cons-date-day">${day}</div>
-          <div class="cons-date-mon">${mon}</div>
+        <div class="apt-date-box">
+          ${catPhotoHtml}
+          <div class="apt-date-day">${day}</div>
+          <div class="apt-date-mon">${mon}</div>
+          <div class="apt-date-yr">${yr}</div>
         </div>
-        ${catAvatarHtml(c.cats)}
         <div class="cons-card-info">
           <div class="cons-card-title-row">
             <h4>${c.cats?.name}</h4>
