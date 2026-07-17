@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'a';
+const BUILD         = 'b';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -826,7 +826,7 @@ function renderConsultations() {
         ${consDocs.map(d => {
           const icon = { receta: 'fa-file-prescription', analisis: 'fa-flask', rayos_x: 'fa-x-ray', otro: 'fa-file' }[d.type] || 'fa-file';
           return d.file_url
-            ? `<button type="button" class="cons-doc-chip" onclick="window.open('${d.file_url}','_blank')"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${d.title}</button>`
+            ? `<button type="button" class="cons-doc-chip" onclick="openDocViewer('${d.file_url}','${d.title.replace(/'/g,"\\'")}','${d.file_type||''}')"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${d.title}</button>`
             : `<span class="cons-doc-chip cons-doc-chip-nofile"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${d.title}</span>`;
         }).join('')}
       </div>
@@ -1017,7 +1017,7 @@ function _renderConsDocsList(consId) {
       <i aria-hidden="true" class="fa-solid ${typeIcon[d.type] || 'fa-file'}"></i>
       <span class="cons-existing-doc-title">${d.title}</span>
       <span class="badge badge-gray" style="font-size:.68rem">${typeLabel[d.type] || 'Otro'}</span>
-      ${d.file_url ? `<button type="button" class="btn-link-sm" onclick="window.open('${d.file_url}','_blank')">Ver</button>` : ''}
+      ${d.file_url ? `<button type="button" class="btn-link-sm" onclick="openDocViewer('${d.file_url}','${d.title.replace(/'/g,"\\'")}','${d.file_type||''}')">Ver</button>` : ''}
       <button type="button" class="btn-unlink" onclick="unlinkConsDoc('${d.id}','${consId}')" aria-label="Quitar">
         <i aria-hidden="true" class="fa-solid fa-xmark"></i>
       </button>
@@ -1505,7 +1505,7 @@ function renderDocuments() {
         ${d.date_issued ? formatDate(d.date_issued) : formatDate(d.created_at?.split('T')[0])}
       </div>
       <div class="doc-card-actions">
-        ${d.file_url ? `<button class="btn-primary" style="font-size:.8rem;padding:6px 12px" onclick="window.open('${d.file_url}','_blank')">Ver</button>` : ''}
+        ${d.file_url ? `<button class="btn-primary" style="font-size:.8rem;padding:6px 12px" onclick="openDocViewer('${d.file_url}','${d.title.replace(/'/g,"\\'")}','${d.file_type||''}')">Ver</button>` : ''}
         <button class="btn-secondary" style="font-size:.8rem;padding:6px 10px" onclick="showDocumentForm('${d.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
         <button class="btn-danger" style="font-size:.8rem;padding:6px 10px" onclick="confirmDelete('document','${d.id}','documento')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
       </div>
@@ -1526,7 +1526,7 @@ function _renderDocModalList() {
           <i aria-hidden="true" class="fa-solid ${typeIcon[d.type] || 'fa-file'}"></i>
           <span class="cons-existing-doc-title">${d.title} <span style="color:var(--text-light);font-size:.7rem">· ${d.cats?.name || ''}</span></span>
           <span class="badge badge-gray" style="font-size:.68rem">${typeLabel[d.type] || 'Otro'}</span>
-          ${d.file_url ? `<button type="button" class="btn-link-sm" onclick="window.open('${d.file_url}','_blank')">Ver</button>` : ''}
+          ${d.file_url ? `<button type="button" class="btn-link-sm" onclick="openDocViewer('${d.file_url}','${d.title.replace(/'/g,"\\'")}','${d.file_type||''}')">Ver</button>` : ''}
         </div>
       `).join('')}
     </div>
@@ -1786,6 +1786,38 @@ function wazeUrl(address) {
 // ──────────────────────────────────────────────
 let _modalTrigger = null;
 
+// ──────────────────────────────────────────────
+// VISOR DE DOCUMENTOS
+// ──────────────────────────────────────────────
+function openDocViewer(url, title, fileType) {
+  const overlay = document.getElementById('doc-viewer-overlay');
+  document.getElementById('doc-viewer-title').textContent = title || 'Documento';
+  document.getElementById('doc-viewer-download').href = url;
+
+  let bodyHtml;
+  if (fileType && fileType.startsWith('image/')) {
+    bodyHtml = `<img src="${url}" alt="${title || 'Documento'}">`;
+  } else if (fileType === 'application/pdf' || url.toLowerCase().includes('.pdf')) {
+    bodyHtml = `<iframe src="${url}" title="${title || 'Documento'}"></iframe>`;
+  } else {
+    bodyHtml = `<div class="doc-viewer-nopreview">
+      <i class="fa-solid fa-file" style="font-size:2.5rem;margin-bottom:12px;display:block" aria-hidden="true"></i>
+      No hay vista previa disponible para este tipo de archivo.<br>
+      <a href="${url}" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600">Descargar archivo</a>
+    </div>`;
+  }
+  document.getElementById('doc-viewer-body').innerHTML = bodyHtml;
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  overlay.querySelector('.modal-close').focus();
+}
+
+function closeDocViewer() {
+  document.getElementById('doc-viewer-overlay').classList.add('hidden');
+  document.getElementById('doc-viewer-body').innerHTML = '';
+  document.body.style.overflow = '';
+}
+
 function openModal(title, bodyHtml) {
   _modalTrigger = document.activeElement;
   document.getElementById('modal-title').textContent = title;
@@ -1813,6 +1845,11 @@ function closeModalDirect() {
 }
 
 function _trapModalFocus(e) {
+  const viewer = document.getElementById('doc-viewer-overlay');
+  if (!viewer.classList.contains('hidden')) {
+    if (e.key === 'Escape') { closeDocViewer(); return; }
+    return;
+  }
   const overlay = document.getElementById('modal-overlay');
   if (overlay.classList.contains('hidden')) return;
   if (e.key === 'Escape') { closeModalDirect(); return; }

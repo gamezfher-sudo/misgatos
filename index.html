@@ -358,6 +358,24 @@
   </button>
 </nav>
 
+<!-- VISOR DE DOCUMENTOS -->
+<div id="doc-viewer-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Visor de documento">
+  <div id="doc-viewer-box">
+    <div id="doc-viewer-header">
+      <span id="doc-viewer-title"></span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <a id="doc-viewer-download" target="_blank" rel="noopener" class="btn-secondary" style="font-size:.8rem;padding:6px 12px;text-decoration:none">
+          <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Abrir externo
+        </a>
+        <button class="modal-close" onclick="closeDocViewer()" aria-label="Cerrar visor">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+    <div id="doc-viewer-body"></div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast" class="hidden" role="status" aria-live="polite"></div>
 
