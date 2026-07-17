@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = '2026-07-16 23:30';
+const BUILD         = '2026-07-17 00:00';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -197,6 +197,18 @@ function populateCatFilters() {
 // ──────────────────────────────────────────────
 // DASHBOARD
 // ──────────────────────────────────────────────
+function catBubblesHtml(cats, fallbackIcon = 'fa-cat') {
+  if (!cats.length) {
+    return `<div class="stat-bubble-empty"><i class="fa-solid ${fallbackIcon}" aria-hidden="true"></i></div>`;
+  }
+  const shown = cats.slice(0, 4);
+  const extra = cats.length - shown.length;
+  return shown.map((c, i) => c?.photo_url
+    ? `<img src="${c.photo_url}" alt="${c?.name || ''}" class="stat-bubble" style="animation-delay:${(i * 0.28).toFixed(2)}s" loading="lazy">`
+    : `<div class="stat-bubble stat-bubble-fallback" style="animation-delay:${(i * 0.28).toFixed(2)}s"><i class="fa-solid fa-cat" aria-hidden="true"></i></div>`
+  ).join('') + (extra > 0 ? `<div class="stat-bubble stat-bubble-more" style="animation-delay:${(shown.length * 0.28).toFixed(2)}s">+${extra}</div>` : '');
+}
+
 async function loadDashboard() {
   const today = todayStr();
   const in30  = daysFromNow(30);
@@ -229,10 +241,22 @@ async function loadDashboard() {
   document.getElementById('stat-vaccines-due').textContent = vacsDue.length;
   document.getElementById('stat-deworm-due').textContent   = dewsDue.length;
 
+  // Burbujas de fotos en cada stat card
+  const upcomingCats = [...new Map(upcoming.map(a => [a.cat_id, a.cats])).values()];
+  const vacCats      = [...new Map(vacsDue.map(v => [v.cat_id, v.cats])).values()];
+  const dewCats      = [...new Map(dewsDue.map(d => [d.cat_id, d.cats])).values()];
+  const iconCats     = document.getElementById('stat-icon-cats');
+  const iconApt      = document.getElementById('stat-icon-upcoming');
+  const iconVac      = document.getElementById('stat-icon-vaccines');
+  const iconDew      = document.getElementById('stat-icon-deworm');
+  if (iconCats) iconCats.innerHTML = catBubblesHtml(state.cats, 'fa-cat');
+  if (iconApt)  iconApt.innerHTML  = catBubblesHtml(upcomingCats, 'fa-calendar-check');
+  if (iconVac)  iconVac.innerHTML  = catBubblesHtml(vacCats, 'fa-syringe');
+  if (iconDew)  iconDew.innerHTML  = catBubblesHtml(dewCats, 'fa-tablets');
+
   // Alert stat cards
-  const statCats   = document.getElementById('stat-cats')?.closest('.stat-card');
-  const statVacs   = document.getElementById('stat-vaccines-due')?.closest('.stat-card');
-  const statDews   = document.getElementById('stat-deworm-due')?.closest('.stat-card');
+  const statVacs = document.getElementById('stat-vaccines-due')?.closest('.stat-card');
+  const statDews = document.getElementById('stat-deworm-due')?.closest('.stat-card');
   if (statVacs) statVacs.classList.toggle('stat-alert', vacsDue.length > 0);
   if (statDews) statDews.classList.toggle('stat-alert', dewsDue.length > 0);
 

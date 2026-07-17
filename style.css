@@ -521,6 +521,53 @@ h1, h2, h3, h4 {
   color: var(--primary);
   margin-bottom: 16px;
 }
+
+/* ── Stat card — burbujas de fotos ── */
+.stat-bubbles-wrap {
+  display: flex; align-items: center; justify-content: center;
+  height: 62px; margin-bottom: 16px;
+  /* fallback si no hay burbujas aun (icono original) */
+  width: 52px; border-radius: var(--radius-full);
+  background: var(--primary-pale); color: var(--primary);
+  font-size: 1.1rem;
+}
+.stat-bubbles-wrap:has(.stat-bubble) {
+  width: auto; background: none; border-radius: 0; font-size: inherit;
+}
+.stat-bubble {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: 2.5px solid white;
+  object-fit: cover; flex-shrink: 0;
+  margin-left: -12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  animation: bubble-float 3.2s ease-in-out infinite;
+}
+.stat-bubble:first-child { margin-left: 0; }
+.stat-bubble-fallback {
+  background: var(--primary-pale); color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.stat-bubble-more {
+  background: var(--primary); color: white;
+  font-size: 0.65rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  letter-spacing: 0;
+}
+.stat-bubble-empty {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--primary-pale); color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+}
+@keyframes bubble-float {
+  0%,100% { transform: translateY(0) scale(1); }
+  40%      { transform: translateY(-7px) scale(1.04); }
+  70%      { transform: translateY(-4px) scale(1.01); }
+}
+
 .stat-value {
   font-family: 'Montserrat', sans-serif;
   font-size: 2.5rem; font-weight: 700;
