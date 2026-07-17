@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = '2026-07-16 23:00';
+const BUILD         = '2026-07-16 23:30';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -160,7 +160,7 @@ async function loadAllData() {
   const [cats, vets, apts, cons, vacs, dews, docs] = await Promise.all([
     sb.from('cats').select('*').eq('user_id', uid).order('name'),
     sb.from('veterinarians').select('*').eq('user_id', uid).order('name'),
-    sb.from('appointments').select('*, cats(name, photo_url), veterinarians(name, clinic_name, address, phone)').order('appointment_date'),
+    sb.from('appointments').select('*, cats(name, photo_url), veterinarians(name, clinic_name, address, phone, email)').order('appointment_date'),
     sb.from('consultations').select('*, cats(name, photo_url), veterinarians(name, clinic_name)').order('visit_date', { ascending: false }),
     sb.from('vaccines').select('*, cats(name, photo_url), veterinarians(name)').order('date_applied', { ascending: false }),
     sb.from('dewormings').select('*, cats(name, photo_url), veterinarians(name)').order('date_applied', { ascending: false }),
@@ -545,12 +545,12 @@ function renderVets() {
       <div class="vet-card-name">Dr(a). ${v.name}</div>
       <div class="vet-card-clinic">${v.clinic_name || 'Consultorio independiente'}</div>
       <div class="vet-card-info">
-        ${v.phone ? `<i aria-hidden="true" class="fa-solid fa-phone"></i> ${v.phone}<br>` : ''}
-        ${v.email ? `<i aria-hidden="true" class="fa-solid fa-envelope"></i> ${v.email}<br>` : ''}
-        ${v.address ? `<i aria-hidden="true" class="fa-solid fa-location-dot"></i> ${v.address}${v.city ? ', ' + v.city : ''}<br>` : ''}
-        ${v.schedule ? `<i aria-hidden="true" class="fa-solid fa-clock"></i> ${v.schedule}` : ''}
+        ${v.address ? `<p><i aria-hidden="true" class="fa-solid fa-location-dot"></i> ${v.address}${v.city ? ', ' + v.city : ''}</p>` : ''}
+        ${v.schedule ? `<p><i aria-hidden="true" class="fa-solid fa-clock"></i> ${v.schedule}</p>` : ''}
       </div>
       <div class="vet-card-actions">
+        ${v.phone ? `<a class="btn-vet-contact btn-vet-call" href="tel:${v.phone}" aria-label="Llamar a ${v.name}"><i aria-hidden="true" class="fa-solid fa-phone"></i> Llamar</a>` : ''}
+        ${v.email ? `<a class="btn-vet-contact btn-vet-email" href="mailto:${v.email}" aria-label="Enviar correo a ${v.name}"><i aria-hidden="true" class="fa-solid fa-envelope"></i> Email</a>` : ''}
         ${v.address ? `<a class="btn-waze" href="${wazeUrl(v.address)}" target="_blank" rel="noopener noreferrer"><i aria-hidden="true" class="fa-solid fa-route"></i> Waze</a>` : ''}
         <button class="btn-secondary" onclick="showVetForm('${v.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
         <button class="btn-danger" onclick="confirmDelete('vet','${v.id}','${v.name}')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
@@ -690,6 +690,8 @@ function renderAppointments() {
         </div>
       </div>
       <div class="apt-actions">
+        ${a.veterinarians?.phone ? `<a class="btn-vet-contact btn-vet-call" href="tel:${a.veterinarians.phone}" style="font-size:.8rem;padding:6px 12px" aria-label="Llamar al veterinario"><i aria-hidden="true" class="fa-solid fa-phone"></i> Llamar</a>` : ''}
+        ${a.veterinarians?.email ? `<a class="btn-vet-contact btn-vet-email" href="mailto:${a.veterinarians.email}" style="font-size:.8rem;padding:6px 12px" aria-label="Email al veterinario"><i aria-hidden="true" class="fa-solid fa-envelope"></i> Email</a>` : ''}
         ${vetAddress ? `<a class="btn-waze" href="${wazeUrl(vetAddress)}" target="_blank" rel="noopener noreferrer"><i aria-hidden="true" class="fa-solid fa-route"></i> Waze</a>` : ''}
         <button class="btn-secondary" style="font-size:.8rem;padding:6px 12px" onclick="showAppointmentForm('${a.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
         ${a.status === 'pendiente' ? `<button class="btn-primary" style="font-size:.8rem;padding:6px 12px;background:var(--secondary)" onclick="completeAppointment('${a.id}')"><i aria-hidden="true" class="fa-solid fa-check"></i> Completar</button>` : ''}

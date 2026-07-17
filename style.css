@@ -288,6 +288,21 @@ h1, h2, h3, h4 {
 .btn-waze:hover { background: #1557B0; }
 .btn-waze:focus-visible { outline: 2px solid #1A73E8; outline-offset: 2px; }
 
+.btn-vet-contact {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: none; border-radius: var(--radius); padding: 9px 14px;
+  font-size: 0.875rem; font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer; text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-vet-call  { background: #1B8A3D; color: #fff; }
+.btn-vet-call:hover  { background: #157032; }
+.btn-vet-call:focus-visible  { outline: 2px solid #1B8A3D; outline-offset: 2px; }
+.btn-vet-email { background: #7B3FA0; color: #fff; }
+.btn-vet-email:hover { background: #652F87; }
+.btn-vet-email:focus-visible { outline: 2px solid #7B3FA0; outline-offset: 2px; }
+
 .btn-logout {
   display: flex; align-items: center; gap: 8px;
   background: transparent;
