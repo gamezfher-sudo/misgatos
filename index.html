@@ -326,10 +326,16 @@
       <div class="section-header">
         <h2><i class="fa-solid fa-circle-user" aria-hidden="true"></i> Mi perfil</h2>
       </div>
-      <div class="profile-grid">
-        <!-- Datos personales -->
+
+      <!-- Pestañas -->
+      <div class="profile-tabs" role="tablist">
+        <button class="profile-tab active" role="tab" aria-selected="true" aria-controls="profile-tab-datos" onclick="switchProfileTab('datos')">Datos personales</button>
+        <button class="profile-tab" role="tab" aria-selected="false" aria-controls="profile-tab-seguridad" onclick="switchProfileTab('seguridad')">Seguridad</button>
+      </div>
+
+      <!-- Pestaña: Datos personales -->
+      <div class="profile-tab-pane" id="profile-tab-datos" role="tabpanel">
         <div class="profile-card">
-          <h3 class="profile-card-title"><i class="fa-solid fa-user" aria-hidden="true"></i> Datos personales</h3>
           <form id="profile-form" onsubmit="saveProfile(event)">
             <div class="field-row">
               <div class="field">
@@ -356,9 +362,12 @@
             </div>
           </form>
         </div>
-        <!-- Cambiar contraseña -->
+      </div>
+
+      <!-- Pestaña: Seguridad -->
+      <div class="profile-tab-pane hidden" id="profile-tab-seguridad" role="tabpanel">
         <div class="profile-card">
-          <h3 class="profile-card-title"><i class="fa-solid fa-lock" aria-hidden="true"></i> Cambiar contraseña</h3>
+          <h3 class="profile-card-title"><i class="fa-solid fa-key" aria-hidden="true"></i> Contraseña</h3>
           <form id="password-form" onsubmit="savePassword(event)">
             <div class="field">
               <label for="prof-new-pass">Nueva contraseña</label>
@@ -369,7 +378,7 @@
               <input type="password" id="prof-confirm-pass" name="confirm_password" autocomplete="new-password" placeholder="Repite la contraseña" minlength="6" required>
             </div>
             <div class="modal-actions" style="justify-content:flex-start;margin-top:4px">
-              <button type="submit" class="btn-primary"><i class="fa-solid fa-key" aria-hidden="true"></i> Cambiar contraseña</button>
+              <button type="submit" class="btn-primary"><i class="fa-solid fa-lock" aria-hidden="true"></i> Cambiar contraseña</button>
             </div>
           </form>
         </div>

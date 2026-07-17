@@ -89,6 +89,16 @@ async function handleLogout() {
 // ──────────────────────────────────────────────
 // PERFIL DE USUARIO
 // ──────────────────────────────────────────────
+function switchProfileTab(tab) {
+  document.querySelectorAll('.profile-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('aria-controls') === `profile-tab-${tab}`);
+    btn.setAttribute('aria-selected', btn.classList.contains('active'));
+  });
+  document.querySelectorAll('.profile-tab-pane').forEach(pane => {
+    pane.classList.toggle('hidden', pane.id !== `profile-tab-${tab}`);
+  });
+}
+
 async function renderProfile() {
   // Obtener datos frescos del servidor para evitar caché local de Supabase
   const { data } = await sb.auth.getUser();

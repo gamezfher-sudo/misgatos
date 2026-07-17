@@ -204,9 +204,8 @@ h1, h2, h3, h4 {
 .field { text-align: left; margin-bottom: 16px; }
 .field label {
   display: flex; align-items: center; gap: 6px;
-  font-size: 0.72rem; font-weight: 600;
+  font-size: 0.78rem; font-weight: 600;
   color: var(--text-muted);
-  text-transform: uppercase; letter-spacing: 0.07em;
   margin-bottom: 6px;
   cursor: default;
 }
@@ -1515,12 +1514,27 @@ h1, h2, h3, h4 {
 .mobile-nav-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── Perfil ── */
-.profile-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  max-width: 900px;
+.profile-tabs {
+  display: flex; gap: 4px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 24px; max-width: 600px;
 }
+.profile-tab {
+  padding: 9px 18px;
+  background: none; border: none; cursor: pointer;
+  font-size: 0.875rem; font-weight: 600;
+  color: var(--text-muted); font-family: 'Inter', sans-serif;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.profile-tab:hover { color: var(--primary); }
+.profile-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.profile-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.profile-tab-pane { max-width: 600px; }
+.profile-tab-pane.hidden { display: none; }
+
 .profile-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -1632,7 +1646,7 @@ h1, h2, h3, h4 {
   .section-filters select { font-size: 0.85rem; }
 
   /* ── Perfil ── */
-  .profile-grid { grid-template-columns: 1fr; gap: 16px; }
+  .profile-tab-pane { max-width: 100%; }
   .profile-card { padding: 20px 16px; }
 }
 
