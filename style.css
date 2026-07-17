@@ -1143,6 +1143,21 @@ h1, h2, h3, h4 {
 }
 .cons-doc-chip:hover { background: rgba(0,105,77,0.18); }
 .cons-doc-chip-nofile { color: var(--text-muted); background: var(--bg-dim); cursor: default; }
+.doc-modal-list { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+.doc-modal-list-title { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+
+/* ── Consulta expandible ── */
+.cons-expandable { display: none; }
+.cons-expandable.expanded { display: block; }
+.cons-expand-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.75rem; font-weight: 600; color: var(--primary);
+  padding: 2px 0; margin-top: 2px;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: inherit;
+  transition: opacity 0.12s;
+}
+.cons-expand-btn:hover { opacity: 0.75; }
 
 /* ── Recurring Vaccines/Dewormings ── */
 .recur-badge {

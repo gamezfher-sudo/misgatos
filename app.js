@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = '2026-07-16 22:30';
+const BUILD         = '2026-07-16 23:00';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -812,10 +812,16 @@ function renderConsultations() {
           <h4>${c.cats?.name} — ${formatDate(c.visit_date)}</h4>
           <p>${c.veterinarians?.name || 'Sin veterinario'} ${c.veterinarians?.clinic_name ? '· ' + c.veterinarians.clinic_name : ''}</p>
           ${c.reason ? `<p><strong>Motivo:</strong> ${c.reason}</p>` : ''}
-          ${c.diagnosis ? `<p><strong>Diagnostico:</strong> ${c.diagnosis}</p>` : ''}
-          ${c.treatment ? `<p><strong>Tratamiento:</strong> ${c.treatment}</p>` : ''}
-          ${c.weight_at_visit ? `<p>Peso: ${c.weight_at_visit} kg</p>` : ''}
-          ${c.follow_up_date ? `<p>Seguimiento: ${formatDate(c.follow_up_date)}</p>` : ''}
+          ${c.weight_at_visit ? `<p>Peso: ${c.weight_at_visit} kg${c.follow_up_date ? ` &nbsp;·&nbsp; Seguimiento: ${formatDate(c.follow_up_date)}` : ''}</p>` : (c.follow_up_date ? `<p>Seguimiento: ${formatDate(c.follow_up_date)}</p>` : '')}
+          ${(c.diagnosis || c.treatment) ? `
+            <div class="cons-expandable" id="cons-exp-${c.id}">
+              ${c.diagnosis ? `<p><strong>Diagnostico:</strong> <span class="cons-exp-text">${c.diagnosis}</span></p>` : ''}
+              ${c.treatment ? `<p><strong>Tratamiento:</strong> <span class="cons-exp-text">${c.treatment}</span></p>` : ''}
+            </div>
+            <button type="button" class="cons-expand-btn" onclick="toggleConsExp('${c.id}',this)" aria-expanded="false">
+              <i aria-hidden="true" class="fa-solid fa-chevron-down"></i> Ver mas
+            </button>
+          ` : ''}
           ${docsChips}
         </div>
         <div class="list-item-actions">
@@ -963,6 +969,16 @@ async function unlinkConsDoc(docId, consId = null) {
     const existingSection = document.querySelector('.cons-existing-docs');
     if (existingSection) existingSection.remove();
   }
+}
+
+function toggleConsExp(id, btn) {
+  const el = document.getElementById(`cons-exp-${id}`);
+  if (!el) return;
+  const expanded = el.classList.toggle('expanded');
+  btn.setAttribute('aria-expanded', expanded);
+  btn.innerHTML = expanded
+    ? '<i aria-hidden="true" class="fa-solid fa-chevron-up"></i> Ver menos'
+    : '<i aria-hidden="true" class="fa-solid fa-chevron-down"></i> Ver mas';
 }
 
 function _renderConsDocsList(consId) {
@@ -1463,7 +1479,7 @@ function renderDocuments() {
         ${d.date_issued ? formatDate(d.date_issued) : formatDate(d.created_at?.split('T')[0])}
       </div>
       <div class="doc-card-actions">
-        ${d.file_url ? `<a class="btn-primary" href="${d.file_url}" target="_blank" rel="noopener noreferrer" style="font-size:.8rem;padding:6px 12px">Ver</a>` : ''}
+        ${d.file_url ? `<button class="btn-primary" style="font-size:.8rem;padding:6px 12px" onclick="window.open('${d.file_url}','_blank')">Ver</button>` : ''}
         <button class="btn-secondary" style="font-size:.8rem;padding:6px 10px" onclick="showDocumentForm('${d.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
         <button class="btn-danger" style="font-size:.8rem;padding:6px 10px" onclick="confirmDelete('document','${d.id}','documento')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
       </div>
@@ -1471,50 +1487,107 @@ function renderDocuments() {
   `).join('');
 }
 
+function _renderDocModalList() {
+  const typeIcon  = { receta: 'fa-file-prescription', analisis: 'fa-flask', rayos_x: 'fa-x-ray', otro: 'fa-file' };
+  const typeLabel = { receta: 'Receta', analisis: 'Analisis', rayos_x: 'Rayos X', otro: 'Otro' };
+  const docs = [...state.documents].slice(0, 20);
+  if (!docs.length) return '';
+  return `
+    <div class="doc-modal-list" id="doc-modal-recent">
+      <p class="doc-modal-list-title"><i aria-hidden="true" class="fa-solid fa-clock-rotate-left"></i> Documentos subidos</p>
+      ${docs.map(d => `
+        <div class="cons-existing-doc-row">
+          <i aria-hidden="true" class="fa-solid ${typeIcon[d.type] || 'fa-file'}"></i>
+          <span class="cons-existing-doc-title">${d.title} <span style="color:var(--text-light);font-size:.7rem">· ${d.cats?.name || ''}</span></span>
+          <span class="badge badge-gray" style="font-size:.68rem">${typeLabel[d.type] || 'Otro'}</span>
+          ${d.file_url ? `<button type="button" class="btn-link-sm" onclick="window.open('${d.file_url}','_blank')">Ver</button>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
 function showDocumentForm(docId = null) {
   const d = docId ? state.documents.find(x => x.id === docId) : null;
   const catOpts = state.cats.map(c => `<option value="${c.id}" ${d?.cat_id===c.id?'selected':''}>${c.name}</option>`).join('');
 
-  openModal(d ? 'Editar documento' : 'Subir Documento', `
-    <form onsubmit="saveDocument(event,'${docId || ''}')">
-      <div class="field"><label>Gato *</label><select name="cat_id" required>${catOpts}</select></div>
-      <div class="field">
-        <label>Tipo de documento *</label>
-        <select name="type" required>
-          <option value="">-- Seleccionar --</option>
-          <option value="receta"   ${d?.type==='receta'  ?'selected':''}>Receta</option>
-          <option value="analisis" ${d?.type==='analisis'?'selected':''}>Analisis</option>
-          <option value="rayos_x"  ${d?.type==='rayos_x' ?'selected':''}>Rayos X</option>
-          <option value="otro"     ${d?.type==='otro'    ?'selected':''}>Otro</option>
-        </select>
+  if (docId) {
+    // Editar: comportamiento original, cierra al guardar
+    openModal('Editar documento', `
+      <form onsubmit="saveDocument(event,'${docId}')">
+        <div class="field"><label>Gato *</label><select name="cat_id" required>${catOpts}</select></div>
+        <div class="field">
+          <label>Tipo de documento *</label>
+          <select name="type" required>
+            <option value="">-- Seleccionar --</option>
+            <option value="receta"   ${d?.type==='receta'  ?'selected':''}>Receta</option>
+            <option value="analisis" ${d?.type==='analisis'?'selected':''}>Analisis</option>
+            <option value="rayos_x"  ${d?.type==='rayos_x' ?'selected':''}>Rayos X</option>
+            <option value="otro"     ${d?.type==='otro'    ?'selected':''}>Otro</option>
+          </select>
+        </div>
+        <div class="field"><label>Titulo *</label><input type="text" name="title" value="${d?.title||''}" required></div>
+        <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-days"></i> Fecha</label><input type="date" name="date_issued" value="${d?.date_issued||todayStr()}"></div>
+        <div class="field">
+          <label><i aria-hidden="true" class="fa-solid fa-paperclip"></i> Archivo (imagen o PDF)</label>
+          <input type="file" id="doc-file" accept="image/*,.pdf">
+          ${d?.file_url ? `<p style="font-size:.8rem;color:var(--secondary);margin-top:4px">Ya tiene archivo — sube uno nuevo para reemplazarlo</p>` : ''}
+        </div>
+        <div class="field"><label>Notas</label><textarea name="notes">${d?.notes||''}</textarea></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModalDirect()"><i aria-hidden="true" class="fa-solid fa-xmark"></i> Cancelar</button>
+          <button type="submit" class="btn-primary"><i aria-hidden="true" class="fa-solid fa-floppy-disk"></i> Guardar</button>
+        </div>
+      </form>
+    `);
+    return;
+  }
+
+  // Nuevo: modal persistente que no se cierra al subir
+  openModal('Subir Documentos', `
+    <form id="doc-upload-form" onsubmit="saveDocument(event,'')">
+      <div class="field-row">
+        <div class="field"><label>Gato *</label><select name="cat_id" required>${catOpts}</select></div>
+        <div class="field">
+          <label>Tipo *</label>
+          <select name="type" required>
+            <option value="">-- Tipo --</option>
+            <option value="receta">Receta</option>
+            <option value="analisis">Analisis</option>
+            <option value="rayos_x">Rayos X</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
       </div>
-      <div class="field"><label>Título *</label><input type="text" name="title" value="${d?.title||''}" required placeholder="Ej: Receta antibiótico, Biometría..."></div>
-      <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-days"></i> Fecha del documento</label><input type="date" name="date_issued" value="${d?.date_issued||todayStr()}"></div>
-      <div class="field">
-        <label><i aria-hidden="true" class="fa-solid fa-paperclip"></i> Archivo (imagen o PDF)</label>
-        <input type="file" id="doc-file" accept="image/*,.pdf">
-        ${d?.file_url ? `<p style="font-size:.8rem;color:var(--secondary);margin-top:4px">Ya tiene archivo — sube uno nuevo para reemplazarlo</p>` : ''}
+      <div class="field"><label>Titulo *</label><input type="text" name="title" required placeholder="Ej: Receta antibiotico, Rayos X torax..."></div>
+      <div class="field-row">
+        <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-days"></i> Fecha</label><input type="date" name="date_issued" value="${todayStr()}"></div>
+        <div class="field">
+          <label><i aria-hidden="true" class="fa-solid fa-paperclip"></i> Archivo *</label>
+          <input type="file" id="doc-file" accept="image/*,.pdf" required>
+        </div>
       </div>
-      <div class="field"><label>Notas</label><textarea name="notes">${d?.notes||''}</textarea></div>
+      <div class="field"><label>Notas</label><textarea name="notes" rows="2"></textarea></div>
       <div class="modal-actions">
-        <button type="button" class="btn-secondary" onclick="closeModalDirect()"><i aria-hidden="true" class="fa-solid fa-xmark"></i> Cancelar</button>
-        <button type="submit" class="btn-primary"><i aria-hidden="true" class="fa-solid fa-floppy-disk"></i> Guardar</button>
+        <button type="button" class="btn-secondary" onclick="closeModalDirect()"><i aria-hidden="true" class="fa-solid fa-xmark"></i> Cerrar</button>
+        <button type="submit" class="btn-primary"><i aria-hidden="true" class="fa-solid fa-cloud-arrow-up"></i> Subir</button>
       </div>
     </form>
+    <div id="doc-modal-recent">${_renderDocModalList()}</div>
   `);
 }
 
 async function saveDocument(e, docId) {
   e.preventDefault();
   const fd  = new FormData(e.target);
-  let fileUrl = docId ? state.documents.find(x => x.id === docId)?.file_url : null;
+  let fileUrl  = docId ? state.documents.find(x => x.id === docId)?.file_url  : null;
   let fileType = docId ? state.documents.find(x => x.id === docId)?.file_type : null;
 
   const file = document.getElementById('doc-file')?.files[0];
   if (file) {
     const ext  = file.name.split('.').pop();
     const path = `${state.user.id}/${Date.now()}.${ext}`;
-    const { data: upData, error: upErr } = await sb.storage.from('medical-docs').upload(path, file, { upsert: true });
+    const { error: upErr } = await sb.storage.from('medical-docs').upload(path, file, { upsert: true });
     if (upErr) return showToast('Error al subir archivo: ' + upErr.message, 'error');
     const { data: urlData } = await sb.storage.from('medical-docs').createSignedUrl(path, 60 * 60 * 24 * 365);
     fileUrl  = urlData?.signedUrl || null;
@@ -1533,14 +1606,31 @@ async function saveDocument(e, docId) {
   let err;
   if (docId) {
     ({ error: err } = await sb.from('documents').update(payload).eq('id', docId));
+    if (err) return showToast('Error: ' + err.message, 'error');
+    showToast('Documento guardado', 'success');
+    closeModalDirect();
+    await loadAllData();
+    renderDocuments();
   } else {
     ({ error: err } = await sb.from('documents').insert(payload));
+    if (err) return showToast('Error: ' + err.message, 'error');
+    showToast('Documento subido', 'success');
+    await loadAllData();
+    // Refrescar lista en el modal sin cerrarlo
+    const recentEl = document.getElementById('doc-modal-recent');
+    if (recentEl) recentEl.innerHTML = _renderDocModalList();
+    // Resetear form para el siguiente archivo (mantiene gato y fecha)
+    const form = document.getElementById('doc-upload-form');
+    if (form) {
+      form.querySelector('[name="type"]').value = '';
+      form.querySelector('[name="title"]').value = '';
+      form.querySelector('[name="notes"]').value = '';
+      const fileInput = document.getElementById('doc-file');
+      if (fileInput) fileInput.value = '';
+      form.querySelector('[name="title"]').focus();
+    }
+    renderDocuments();
   }
-  if (err) return showToast('Error: ' + err.message, 'error');
-  showToast('Documento guardado', 'success');
-  closeModalDirect();
-  await loadAllData();
-  renderDocuments();
 }
 
 // ──────────────────────────────────────────────
