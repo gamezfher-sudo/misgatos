@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FFFFFF">
+  <title>MisGatos — Control Veterinario</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="skip-link" href="#content">Saltar al contenido</a>
+
+<!-- ============================================================
+     PANTALLA DE LOGIN
+     ============================================================ -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo" aria-hidden="true">MG</div>
+    <h1>MisGatos</h1>
+    <p class="auth-subtitle">Control Veterinario Personal</p>
+
+    <div id="auth-tabs" role="tablist">
+      <button class="tab-btn active" role="tab" aria-selected="true" onclick="switchAuthTab('login')">Iniciar Sesion</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchAuthTab('register')">Registrarse</button>
+    </div>
+
+    <!-- Login -->
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="field">
+        <label for="login-email">Correo electronico</label>
+        <input type="email" id="login-email" name="email" autocomplete="email" spellcheck="false" placeholder="tu@correo.com" required>
+      </div>
+      <div class="field">
+        <label for="login-password">Contrasena</label>
+        <input type="password" id="login-password" name="password" autocomplete="current-password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-primary full-width">Entrar</button>
+    </form>
+
+    <!-- Registro -->
+    <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+      <div class="field">
+        <label for="reg-email">Correo electronico</label>
+        <input type="email" id="reg-email" name="email" autocomplete="email" spellcheck="false" placeholder="tu@correo.com" required>
+      </div>
+      <div class="field">
+        <label for="reg-password">Contrasena</label>
+        <input type="password" id="reg-password" name="password" autocomplete="new-password" placeholder="Minimo 6 caracteres" required minlength="6">
+      </div>
+      <div class="field">
+        <label for="reg-password2">Confirmar contrasena</label>
+        <input type="password" id="reg-password2" name="password2" autocomplete="new-password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-primary full-width">Crear cuenta</button>
+    </form>
+
+    <div id="auth-error" class="error-msg hidden" role="alert" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     APP PRINCIPAL
+     ============================================================ -->
+<div id="app" class="hidden">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" aria-label="Navegacion principal">
+    <div class="sidebar-header">
+      <span class="logo-badge" aria-hidden="true">MG</span>
+      <span class="logo-text">MisGatos</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-section="dashboard">
+        <i class="fa-solid fa-house nav-icon" aria-hidden="true"></i><span class="nav-label">Inicio</span>
+      </a>
+      <a href="#" class="nav-item" data-section="cats">
+        <i class="fa-solid fa-cat nav-icon" aria-hidden="true"></i><span class="nav-label">Mis Gatos</span>
+      </a>
+      <a href="#" class="nav-item" data-section="vets">
+        <i class="fa-solid fa-stethoscope nav-icon" aria-hidden="true"></i><span class="nav-label">Veterinarios</span>
+      </a>
+      <a href="#" class="nav-item" data-section="appointments">
+        <i class="fa-solid fa-calendar-days nav-icon" aria-hidden="true"></i><span class="nav-label">Citas</span>
+      </a>
+      <a href="#" class="nav-item" data-section="consultations">
+        <i class="fa-solid fa-notes-medical nav-icon" aria-hidden="true"></i><span class="nav-label">Historial</span>
+      </a>
+      <a href="#" class="nav-item" data-section="vaccines">
+        <i class="fa-solid fa-syringe nav-icon" aria-hidden="true"></i><span class="nav-label">Vacunas</span>
+      </a>
+      <a href="#" class="nav-item" data-section="dewormings">
+        <i class="fa-solid fa-tablets nav-icon" aria-hidden="true"></i><span class="nav-label">Desparasitaciones</span>
+      </a>
+      <a href="#" class="nav-item" data-section="documents">
+        <i class="fa-solid fa-folder-open nav-icon" aria-hidden="true"></i><span class="nav-label">Documentos</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span id="user-email-display" class="user-email"></span>
+      <button onclick="handleLogout()" class="btn-logout">
+        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Cerrar sesion
+      </button>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main id="content">
+
+    <!-- HEADER MOVIL -->
+    <header class="mobile-header">
+      <button class="menu-btn" onclick="toggleSidebar()" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">
+        <i class="fa-solid fa-bars" aria-hidden="true"></i>
+      </button>
+      <span class="mobile-title">MisGatos</span>
+      <button onclick="handleLogout()" class="btn-icon" aria-label="Cerrar sesion">
+        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section id="s-dashboard" class="section">
+      <div id="dash-welcome" class="dashboard-welcome"></div>
+
+      <div id="reminders-banner" class="hidden" aria-live="polite"></div>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-cat"></i></div>
+          <div class="stat-value" id="stat-cats">—</div>
+          <div class="stat-label">Gatos registrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div>
+          <div class="stat-value" id="stat-upcoming">—</div>
+          <div class="stat-label">Citas proximas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-syringe"></i></div>
+          <div class="stat-value" id="stat-vaccines-due">—</div>
+          <div class="stat-label">Vacunas por reforzar</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" aria-hidden="true"><i class="fa-solid fa-tablets"></i></div>
+          <div class="stat-value" id="stat-deworm-due">—</div>
+          <div class="stat-label">Desparasitaciones proximas</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="dash-card">
+          <h3><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> Proximas citas</h3>
+          <div id="upcoming-appointments">
+            <div class="empty-state">Cargando&hellip;</div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <h3><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Alertas de salud</h3>
+          <div id="health-alerts">
+            <div class="empty-state">Cargando&hellip;</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MIS GATOS -->
+    <section id="s-cats" class="section hidden">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-cat" aria-hidden="true"></i> Mis Gatos</h2>
+      </div>
+      <div class="chip-bar" id="cats-chip-bar">
+        <button class="chip active" onclick="filterCatsByStatus('all', this)">Todos</button>
+        <button class="chip" onclick="filterCatsByStatus('ok', this)">
+          <span class="chip-dot" style="background:#00694D"></span>Saludable
+        </button>
+        <button class="chip" onclick="filterCatsByStatus('warn', this)">
+          <span class="chip-dot" style="background:#F59E0B"></span>Revision
+        </button>
+        <button class="chip" onclick="filterCatsByStatus('bad', this)">
+          <span class="chip-dot" style="background:#BA1A1A"></span>Alerta
+        </button>
+      </div>
+      <div id="cats-grid" class="cards-grid">
+        <div class="empty-state">Cargando&hellip;</div>
+      </div>
+    </section>
+
+    <!-- VETERINARIOS -->
+    <section id="s-vets" class="section hidden">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-stethoscope" aria-hidden="true"></i> Veterinarios</h2>
+        <button class="btn-primary" onclick="showVetForm()">
+          <i class="fa-solid fa-plus" aria-hidden="true"></i> Agregar veterinario
+        </button>
+      </div>
+      <div id="vets-grid" class="cards-grid">
+        <div class="empty-state">Cargando&hellip;</div>
+      </div>
+    </section>
+
+    <!-- CITAS -->
+    <section id="s-appointments" class="section hidden">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Citas</h2>
+        <button class="btn-primary" onclick="showAppointmentForm()">
+          <i class="fa-solid fa-plus" aria-hidden="true"></i> Nueva cita
+        </button>
+      </div>
+      <div class="filter-bar">
+        <label for="apt-filter-cat" class="sr-only">Filtrar por gato</label>
+        <select id="apt-filter-cat" onchange="renderAppointments()">
+          <option value="">Todos los gatos</option>
+        </select>
+        <label for="apt-filter-status" class="sr-only">Filtrar por estado</label>
+        <select id="apt-filter-status" onchange="renderAppointments()">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendientes</option>
+          <option value="completada">Completadas</option>
+          <option value="cancelada">Canceladas</option>
+        </select>
+      </div>
+      <div id="appointments-list" class="list-container">
+        <div class="empty-state">Cargando&hellip;</div>
+      </div>
+    </section>
+
+    <!-- HISTORIAL -->
+    <section id="s-consultations" class="section hidden">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-notes-medical" aria-hidden="true"></i> Historial Medico</h2>
+        <button class="btn-primary" onclick="showConsultationForm()">
+          <i class="fa-solid fa-plus" aria-hidden="true"></i> Nueva consulta
+        </button>
+      </div>
+      <div class="filter-bar">
+        <label for="cons-filter-cat" class="sr-only">Filtrar por gato</label>
+        <select id="cons-filter-cat" onchange="renderConsultations()">
+          <option value="">Todos los gatos</option>
+        </select>
+      </div>
+      <div id="consultations-list" class="list-container">
+        <div class="empty-state">Cargando&hellip;</div>
+      </div>
+    </section>
+
+    <!-- VACUNAS -->
+    <section id="s-vaccines" class="section hidden">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-syringe" aria-hidden="true"></i> Vacunas</h2>
+        <button class="btn-primary" onclick="showVaccineForm()">
+          <i class="fa-solid fa-plus" aria-hidden="true"></i> Registrar vacuna
+        </button>
+      </div>
+      <div class="filter-bar">
+        <label for="vac-filter-cat" class="sr-only">Filtrar por gato</label>
+        <select id="vac-filter-cat" onchange="renderVaccines()">
+          <option value="">Todos los gatos</option>
+        </select>
+      </div>
+      <div id="vaccines-list" class="list-container">
+        <div class="empty-state">Cargando&hellip;</div>
+      </div>
+    </section>
+
+    <!-- DESPARASITACIONES -->
+    <section id="s-dewormings" class="section hidden">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-tablets" aria-hidden="true"></i> Desparasitaciones</h2>
+        <button class="btn-primary" onclick="showDewormingForm()">
+          <i class="fa-solid fa-plus" aria-hidden="true"></i> Registrar
+        </button>
+      </div>
+      <div class="filter-bar">
+        <label for="dew-filter-cat" class="sr-only">Filtrar por gato</label>
+        <select id="dew-filter-cat" onchange="renderDewormings()">
+          <option value="">Todos los gatos</option>
+        </select>
+      </div>
+      <div id="dewormings-list" class="list-container">
+        <div class="empty-state">Cargando&hellip;</div>
+      </div>
+    </section>
+
+    <!-- DOCUMENTOS -->
+    <section id="s-documents" class="section hidden">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-folder-open" aria-hidden="true"></i> Documentos</h2>
+        <button class="btn-primary" onclick="showDocumentForm()">
+          <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i> Subir documento
+        </button>
+      </div>
+      <div class="filter-bar">
+        <label for="doc-filter-cat" class="sr-only">Filtrar por gato</label>
+        <select id="doc-filter-cat" onchange="renderDocuments()">
+          <option value="">Todos los gatos</option>
+        </select>
+        <label for="doc-filter-type" class="sr-only">Filtrar por tipo</label>
+        <select id="doc-filter-type" onchange="renderDocuments()">
+          <option value="">Todos los tipos</option>
+          <option value="receta">Recetas</option>
+          <option value="analisis">Analisis</option>
+          <option value="rayos_x">Rayos X</option>
+          <option value="otro">Otros</option>
+        </select>
+      </div>
+      <div id="documents-grid" class="cards-grid">
+        <div class="empty-state">Cargando&hellip;</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay" class="hidden" onclick="closeModal(event)" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div id="modal-box">
+    <div id="modal-header">
+      <h3 id="modal-title"></h3>
+      <button class="modal-close" onclick="closeModalDirect()" aria-label="Cerrar">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button id="fab-add-cat" class="fab hidden" onclick="showCatForm()" aria-label="Agregar gato">
+  <i class="fa-solid fa-plus" aria-hidden="true"></i>
+  <span class="fab-tooltip">Agregar Gato</span>
+</button>
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav" aria-label="Navegacion principal">
+  <button class="mobile-nav-item active" onclick="navigate('dashboard')" data-nav="dashboard">
+    <i class="fa-solid fa-house" aria-hidden="true"></i>
+    <span>Inicio</span>
+  </button>
+  <button class="mobile-nav-item" onclick="navigate('cats')" data-nav="cats">
+    <i class="fa-solid fa-cat" aria-hidden="true"></i>
+    <span>Mis Gatos</span>
+  </button>
+  <button class="mobile-nav-item" onclick="navigate('appointments')" data-nav="appointments">
+    <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+    <span>Citas</span>
+  </button>
+  <button class="mobile-nav-item" onclick="navigate('consultations')" data-nav="consultations">
+    <i class="fa-solid fa-notes-medical" aria-hidden="true"></i>
+    <span>Historial</span>
+  </button>
+</nav>
+
+<!-- TOAST -->
+<div id="toast" class="hidden" role="status" aria-live="polite"></div>
+
+<!-- OVERLAY SIDEBAR MOVIL -->
+<div id="sidebar-overlay" class="hidden"
+  onclick="toggleSidebar()"
+  onkeydown="if(event.key==='Enter'||event.key===' ')toggleSidebar()"
+  role="button" tabindex="0" aria-label="Cerrar menu"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
