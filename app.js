@@ -344,7 +344,7 @@ async function loadDashboard() {
   upcomingEl.innerHTML = nearApts.length
     ? `<div class="apt-timeline">${nearApts.map(a => {
         const diff  = daysDiff(today, a.appointment_date);
-        const label = diff === 0 ? 'HOY' : diff === 1 ? 'Manana' : `En ${diff}d`;
+        const label = diff === 0 ? 'Hoy' : diff === 1 ? 'Mañana' : `En ${diff}d`;
         const cls   = diff === 0 ? 'badge-red' : diff === 1 ? 'badge-yellow' : 'badge-green';
         const vet   = a.veterinarians?.clinic_name || a.veterinarians?.name || 'Sin clinica';
         return `<div class="apt-timeline-item">

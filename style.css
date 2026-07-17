@@ -601,7 +601,7 @@ h1, h2, h3, h4 {
 .dash-card h3 {
   font-family: 'Montserrat', sans-serif;
   font-size: 0.85rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.07em;
+  letter-spacing: 0.02em;
   color: var(--text-muted);
   margin-bottom: 20px;
   display: flex; align-items: center; gap: 7px;
