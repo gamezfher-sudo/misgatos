@@ -8,6 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
+const BUILD         = '2026-07-16 18:45';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -102,6 +103,8 @@ function switchAuthTab(tab) {
 function showApp()  {
   document.getElementById('auth-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
+  const bl = document.getElementById('build-label');
+  if (bl) bl.textContent = `build ${BUILD}`;
 }
 function showAuth() {
   document.getElementById('app').classList.add('hidden');
