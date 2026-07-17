@@ -429,7 +429,7 @@ function renderCats() {
   grid.innerHTML = filtered.map(c => {
     const age    = c.birthdate ? calcAge(c.birthdate) : '';
     const status = getCatStatus(c.id);
-    const info   = [c.breed || 'Sin raza', c.gender, age].filter(Boolean).join(' · ');
+    const info   = [c.gender, age].filter(Boolean).join(' · ');
     const menuId = `cat-menu-${c.id}`;
     return `<div class="cat-card">
       <div class="cat-card-photo" onclick="showCatDetail('${c.id}')">
