@@ -5,7 +5,7 @@ const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY    = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const FROM_NAME  = 'MisGatos'
-const FROM_EMAIL = 'gamezfher+misgatos@gmail.com'
+const FROM_EMAIL = 'gamezfher@gmail.com'
 
 Deno.serve(async () => {
   const sb = createClient(SUPABASE_URL, SERVICE_KEY)
