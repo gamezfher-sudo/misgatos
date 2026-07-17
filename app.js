@@ -232,7 +232,7 @@ async function loadAllData() {
     sb.from('consultations').select('*, cats(name, photo_url), veterinarians(name, clinic_name)').order('visit_date', { ascending: false }),
     sb.from('vaccines').select('*, cats(name, photo_url), veterinarians(name)').order('date_applied', { ascending: false }),
     sb.from('dewormings').select('*, cats(name, photo_url), veterinarians(name)').order('date_applied', { ascending: false }),
-    sb.from('documents').select('*, cats(name), consultations(visit_date, reason)').order('created_at', { ascending: false }),
+    sb.from('documents').select('*, cats(name, photo_url), consultations(visit_date, reason)').order('created_at', { ascending: false }),
   ]);
 
   state.cats          = cats.data  || [];
