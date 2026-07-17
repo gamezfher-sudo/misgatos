@@ -1,13 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const RESEND_API_KEY       = Deno.env.get('RESEND_API_KEY')!
-const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
-const SERVICE_KEY          = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-// Si no hay dominio verificado en Resend, los emails van a esta dirección fija
-// (la misma con la que se registró la cuenta de Resend)
-const NOTIFICATION_EMAIL   = Deno.env.get('NOTIFICATION_EMAIL') || null
+const BREVO_API_KEY  = Deno.env.get('BREVO_API_KEY')!
+const SUPABASE_URL   = Deno.env.get('SUPABASE_URL')!
+const SERVICE_KEY    = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-const FROM_EMAIL = 'MisGatos <onboarding@resend.dev>'
+const FROM_NAME  = 'MisGatos'
+const FROM_EMAIL = 'gamezfher+misgatos@gmail.com'
 
 Deno.serve(async () => {
   const sb = createClient(SUPABASE_URL, SERVICE_KEY)
@@ -56,10 +54,8 @@ Deno.serve(async () => {
 
       // Obtener email del dueño
       const { data: userData, error: userErr } = await sb.auth.admin.getUserById(userId)
-      const userEmail = userData?.user?.email
-      if (userErr || !userEmail) continue
-      // Usar email fijo de Resend si no hay dominio verificado, o el email real del usuario
-      const toEmail = NOTIFICATION_EMAIL || userEmail
+      const toEmail = userData?.user?.email
+      if (userErr || !toEmail) continue
 
       const catName  = cat?.name || 'Tu gato'
       const vet      = apt.veterinarians as any
@@ -74,17 +70,18 @@ Deno.serve(async () => {
 
       const html = buildEmail({ catName, vetName, clinic, apptDate, apptTime, reason, whenLabel, days })
 
-      const res = await fetch('https://api.resend.com/emails', {
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'content-type': 'application/json',
         },
         body: JSON.stringify({
-          from: FROM_EMAIL,
-          to: [toEmail],
+          sender: { name: FROM_NAME, email: FROM_EMAIL },
+          to: [{ email: toEmail }],
           subject,
-          html,
+          htmlContent: html,
         }),
       })
 
