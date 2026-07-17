@@ -780,7 +780,7 @@ h1, h2, h3, h4 {
   border-radius: var(--radius-xl);
   padding: 18px 22px;
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: 18px;
   align-items: center;
   box-shadow: var(--shadow);
@@ -797,15 +797,76 @@ h1, h2, h3, h4 {
   min-width: 60px;
   box-shadow: 0 2px 8px rgba(0,105,77,0.25);
 }
+.apt-date-cat-img {
+  width: 44px; height: 44px;
+  border-radius: 50%; object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.7);
+  display: block; margin: 0 auto 8px;
+}
+.apt-date-cat-icon {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.15);
+}
 .apt-date-day  { font-family: 'Montserrat', sans-serif; font-size: 1.9rem; font-weight: 700; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
-.apt-date-mon  { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.85; margin-top: 2px; }
+.apt-date-mon  { font-size: 0.6rem; text-transform: capitalize; letter-spacing: 0.04em; opacity: 0.85; margin-top: 2px; }
 .apt-date-yr   { font-size: 0.6rem; opacity: 0.65; }
 
 .apt-info h4 { font-weight: 600; margin-bottom: 3px; font-size: 0.95rem; }
 .apt-info p  { font-size: 0.82rem; color: var(--text-muted); }
 .apt-time { font-size: 0.85rem; font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 5px; }
 .apt-time i { font-size: 0.75rem; }
-.apt-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+
+/* 3-dot menu */
+.apt-menu-wrap { position: relative; }
+.apt-menu-btn {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); cursor: pointer;
+  color: var(--text-muted); font-size: 1rem;
+  transition: background 0.15s, color 0.15s;
+}
+.apt-menu-btn:hover { background: var(--primary-pale-solid); color: var(--primary); border-color: var(--primary); }
+.apt-menu-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.apt-menu-dropdown {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0;
+  min-width: 140px; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md); z-index: 100; overflow: hidden;
+}
+.apt-menu-dropdown.open { display: block; }
+.apt-menu-dropdown button {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 10px 14px; background: none; border: none;
+  font-size: 0.85rem; color: var(--text); cursor: pointer; text-align: left;
+  transition: background 0.12s;
+}
+.apt-menu-dropdown button:hover { background: var(--primary-pale-solid); }
+.apt-menu-dropdown button + button { border-top: 1px solid var(--border); }
+.apt-menu-danger { color: #dc2626 !important; }
+.apt-menu-danger:hover { background: #fef2f2 !important; }
+
+/* Actions row */
+.apt-actions {
+  grid-column: 1 / -1;
+  display: flex; flex-direction: row;
+  align-items: center; justify-content: space-between;
+  gap: 8px; padding-top: 12px;
+  border-top: 1px solid var(--border); margin-top: 4px;
+}
+.apt-contact-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* Completar button */
+.btn-complete {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; background: var(--primary); color: white;
+  border: none; border-radius: var(--radius-lg);
+  font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  transition: background 0.15s; white-space: nowrap; flex-shrink: 0;
+}
+.btn-complete:hover { background: var(--primary-d); }
+.btn-complete:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── Generic List Item ── */
 .list-item {
@@ -1385,20 +1446,13 @@ h1, h2, h3, h4 {
 
   /* ── Citas (Appointments) ── */
   .apt-item {
-    grid-template-columns: auto auto 1fr;
+    grid-template-columns: auto 1fr auto;
     padding: 14px;
     gap: 10px;
   }
-  .apt-actions {
-    grid-column: 1 / -1;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 6px;
-  }
-  .apt-actions a,
-  .apt-actions button { font-size: 0.78rem !important; padding: 6px 10px !important; }
+  .apt-actions { flex-wrap: wrap; }
+  .apt-contact-btns { flex-wrap: wrap; gap: 5px; }
+  .btn-vet-contact, .btn-waze, .btn-complete { font-size: 0.78rem !important; padding: 6px 10px !important; }
 
   /* ── Veterinarios ── */
   .cards-grid { grid-template-columns: 1fr; gap: 12px; }

@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'f';
+const BUILD         = 'g';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -760,19 +760,23 @@ function renderAppointments() {
     }[a.status] || '';
 
     const reminderBadge = (!isPast && a.status === 'pendiente' && diff <= 2)
-      ? `<span class="badge badge-red">${diff === 0 ? 'HOY' : diff === 1 ? 'Manana' : 'En 2 dias'}</span>`
+      ? `<span class="badge badge-red">${diff === 0 ? 'Hoy' : diff === 1 ? 'Mañana' : 'En 2 días'}</span>`
       : '';
 
     const vetName    = a.veterinarians?.clinic_name || a.veterinarians?.name || 'Sin veterinario';
     const vetAddress = a.veterinarians?.address;
 
+    const catPhotoHtml = a.cats?.photo_url
+      ? `<img src="${a.cats.photo_url}" alt="${a.cats.name}" class="apt-date-cat-img">`
+      : `<div class="apt-date-cat-img apt-date-cat-icon"><i aria-hidden="true" class="fa-solid fa-cat"></i></div>`;
+
     return `<div class="apt-item">
       <div class="apt-date-box">
+        ${catPhotoHtml}
         <div class="apt-date-day">${day}</div>
         <div class="apt-date-mon">${mon}</div>
         <div class="apt-date-yr">${yr}</div>
       </div>
-      ${catAvatarHtml(a.cats)}
       <div class="apt-info">
         <h4>${a.cats?.name} — ${vetName}</h4>
         <p class="apt-time"><i aria-hidden="true" class="fa-solid fa-clock"></i> ${formatTime(a.appointment_time)}</p>
@@ -781,13 +785,26 @@ function renderAppointments() {
           ${statusBadge} ${reminderBadge}
         </div>
       </div>
+      <div class="apt-menu-wrap">
+        <button class="apt-menu-btn" onclick="toggleAptMenu(event,'${a.id}')" aria-label="Opciones" aria-haspopup="true">
+          <i aria-hidden="true" class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+        <div class="apt-menu-dropdown" id="apt-menu-${a.id}" role="menu">
+          <button role="menuitem" onclick="showAppointmentForm('${a.id}');closeAptMenus()">
+            <i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar
+          </button>
+          <button role="menuitem" class="apt-menu-danger" onclick="confirmDelete('appointment','${a.id}','cita');closeAptMenus()">
+            <i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar
+          </button>
+        </div>
+      </div>
       <div class="apt-actions">
-        ${a.veterinarians?.phone ? `<a class="btn-vet-contact btn-vet-call" href="tel:${a.veterinarians.phone}" style="font-size:.8rem;padding:6px 12px" aria-label="Llamar al veterinario"><i aria-hidden="true" class="fa-solid fa-phone"></i> Llamar</a>` : ''}
-        ${a.veterinarians?.email ? `<a class="btn-vet-contact btn-vet-email" href="mailto:${a.veterinarians.email}" style="font-size:.8rem;padding:6px 12px" aria-label="Email al veterinario"><i aria-hidden="true" class="fa-solid fa-envelope"></i> Email</a>` : ''}
-        ${vetAddress ? `<a class="btn-waze" href="${wazeUrl(vetAddress)}" target="_blank" rel="noopener noreferrer"><i aria-hidden="true" class="fa-solid fa-route"></i> Waze</a>` : ''}
-        <button class="btn-secondary" style="font-size:.8rem;padding:6px 12px" onclick="showAppointmentForm('${a.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
-        ${a.status === 'pendiente' ? `<button class="btn-primary" style="font-size:.8rem;padding:6px 12px;background:var(--secondary)" onclick="completeAppointment('${a.id}')"><i aria-hidden="true" class="fa-solid fa-check"></i> Completar</button>` : ''}
-        <button class="btn-danger" style="font-size:.8rem;padding:6px 12px" onclick="confirmDelete('appointment','${a.id}','cita')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
+        <div class="apt-contact-btns">
+          ${a.veterinarians?.phone ? `<a class="btn-vet-contact btn-vet-call" href="tel:${a.veterinarians.phone}" aria-label="Llamar al veterinario"><i aria-hidden="true" class="fa-solid fa-phone"></i> Llamar</a>` : ''}
+          ${a.veterinarians?.email ? `<a class="btn-vet-contact btn-vet-email" href="mailto:${a.veterinarians.email}" aria-label="Email al veterinario"><i aria-hidden="true" class="fa-solid fa-envelope"></i> Email</a>` : ''}
+          ${vetAddress ? `<a class="btn-waze" href="${wazeUrl(vetAddress)}" target="_blank" rel="noopener noreferrer"><i aria-hidden="true" class="fa-solid fa-route"></i> Waze</a>` : ''}
+        </div>
+        ${a.status === 'pendiente' ? `<button class="btn-complete" onclick="completeAppointment('${a.id}')"><i aria-hidden="true" class="fa-solid fa-circle-check"></i> Completar</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -873,6 +890,20 @@ async function completeAppointment(id) {
   const { error } = await sb.from('appointments').update({ status: 'completada' }).eq('id', id);
   if (!error) { await loadAllData(); renderAppointments(); showToast('Cita completada', 'success'); }
 }
+
+function toggleAptMenu(e, aptId) {
+  e.stopPropagation();
+  const menu = document.getElementById(`apt-menu-${aptId}`);
+  const isOpen = menu?.classList.contains('open');
+  closeAptMenus();
+  if (!isOpen) menu?.classList.add('open');
+}
+
+function closeAptMenus() {
+  document.querySelectorAll('.apt-menu-dropdown.open').forEach(m => m.classList.remove('open'));
+}
+
+document.addEventListener('click', () => closeAptMenus());
 
 // ──────────────────────────────────────────────
 // CONSULTAS / HISTORIAL
