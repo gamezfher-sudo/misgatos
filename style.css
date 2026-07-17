@@ -1515,21 +1515,22 @@ h1, h2, h3, h4 {
 
 /* ── Perfil ── */
 .profile-tabs {
-  display: flex; gap: 4px;
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 24px; max-width: 600px;
+  display: inline-flex; gap: 4px;
+  background: var(--primary-pale-solid);
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 24px;
 }
 .profile-tab {
-  padding: 9px 18px;
+  padding: 8px 20px;
   background: none; border: none; cursor: pointer;
   font-size: 0.875rem; font-weight: 600;
   color: var(--text-muted); font-family: 'Inter', sans-serif;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: color 0.15s, border-color 0.15s;
+  border-radius: 999px;
+  transition: background 0.18s, color 0.18s;
 }
 .profile-tab:hover { color: var(--primary); }
-.profile-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.profile-tab.active { background: var(--primary); color: white; }
 .profile-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .profile-tab-pane { max-width: 600px; }
