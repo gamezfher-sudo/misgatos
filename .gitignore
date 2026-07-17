@@ -3,3 +3,4 @@
 .env.local
 node_modules/
 stitch_smart_ui_transformation/
+supabase/.temp/
