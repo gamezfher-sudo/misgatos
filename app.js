@@ -1682,25 +1682,38 @@ function renderDocuments() {
     return;
   }
 
-  const typeIcon = { receta: '<i aria-hidden="true" class="fa-solid fa-file-prescription"></i>', analisis: '<i aria-hidden="true" class="fa-solid fa-flask"></i>', rayos_x: '<i aria-hidden="true" class="fa-solid fa-x-ray"></i>', otro: '<i aria-hidden="true" class="fa-solid fa-file"></i>' };
+  const typeIcon  = { receta: 'fa-file-prescription', analisis: 'fa-flask', rayos_x: 'fa-x-ray', otro: 'fa-file' };
   const typeLabel = { receta: 'Receta', analisis: 'Análisis', rayos_x: 'Rayos X', otro: 'Otro' };
 
-  grid.innerHTML = list.map(d => `
-    <div class="doc-card">
-      <div class="doc-card-type">${typeLabel[d.type] || 'DOC'}</div>
-      <div class="doc-card-title">${d.title}</div>
-      <div class="doc-card-meta">
-        ${d.cats?.name}<br>
-        ${typeLabel[d.type] || 'Documento'}<br>
-        ${d.date_issued ? formatDate(d.date_issued) : formatDate(d.created_at?.split('T')[0])}
+  grid.innerHTML = list.map(d => {
+    const safeTitle = d.title.replace(/'/g, "\\'");
+    const docDate   = d.date_issued ? formatDate(d.date_issued) : formatDate(d.created_at?.split('T')[0]);
+    return `
+    <div class="doc-row">
+      ${catAvatarHtml(d.cats)}
+      <div class="doc-row-icon"><i aria-hidden="true" class="fa-solid ${typeIcon[d.type] || 'fa-file'}"></i></div>
+      <div class="doc-row-body">
+        <span class="doc-row-title">${d.title}</span>
+        <span class="doc-row-meta">${d.cats?.name || '&mdash;'} &middot; ${typeLabel[d.type] || 'Documento'} &middot; ${docDate}</span>
       </div>
-      <div class="doc-card-actions">
-        ${d.file_url ? `<button class="btn-primary" style="font-size:.8rem;padding:6px 12px" onclick="openDocViewer('${d.file_url}','${d.title.replace(/'/g,"\\'")}','${d.file_type||''}')">Ver</button>` : ''}
-        <button class="btn-secondary" style="font-size:.8rem;padding:6px 10px" onclick="showDocumentForm('${d.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
-        <button class="btn-danger" style="font-size:.8rem;padding:6px 10px" onclick="confirmDelete('document','${d.id}','documento')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
+      <div class="doc-row-actions">
+        ${d.file_url ? `<button class="btn-primary doc-ver-btn" onclick="openDocViewer('${d.file_url}','${safeTitle}','${d.file_type||''}')"><i aria-hidden="true" class="fa-solid fa-eye"></i> Ver</button>` : ''}
+        <div class="apt-menu-wrap">
+          <button class="apt-menu-btn" onclick="toggleCardMenu(event,'doc-menu-${d.id}')" aria-label="Opciones" aria-haspopup="true">
+            <i aria-hidden="true" class="fa-solid fa-ellipsis-vertical"></i>
+          </button>
+          <div class="apt-menu-dropdown" id="doc-menu-${d.id}" role="menu">
+            <button role="menuitem" onclick="showDocumentForm('${d.id}');closeAptMenus()">
+              <i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar
+            </button>
+            <button role="menuitem" class="apt-menu-danger" onclick="confirmDelete('document','${d.id}','documento');closeAptMenus()">
+              <i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function _renderDocModalList() {

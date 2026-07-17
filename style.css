@@ -914,25 +914,36 @@ h1, h2, h3, h4 {
 .list-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
 /* ── Document Card ── */
-.doc-card {
+/* ── Doc Rows ── */
+#documents-grid { display: flex; flex-direction: column; gap: 8px; }
+
+.doc-row {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: 24px 20px;
-  display: flex; flex-direction: column; gap: 10px;
-  align-items: center; text-align: center;
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
   box-shadow: var(--shadow);
   transition: box-shadow 0.15s, transform 0.15s;
 }
-.doc-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.doc-card-icon, .doc-card-type {
-  font-size: 1.5rem;
-  color: var(--primary);
-  opacity: 0.8;
+.doc-row:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.doc-row-icon {
+  width: 34px; height: 34px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--primary-pale-solid); border-radius: var(--radius-lg);
+  color: var(--primary); font-size: 0.95rem;
 }
-.doc-card-title { font-weight: 600; font-size: 0.9rem; color: var(--text); }
-.doc-card-meta  { font-size: 0.78rem; color: var(--text-muted); line-height: 1.7; }
-.doc-card-actions { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.doc-row-body { flex: 1; min-width: 0; }
+.doc-row-title {
+  display: block; font-weight: 600; font-size: 0.9rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.doc-row-meta { font-size: 0.75rem; color: var(--text-muted); }
+.doc-row-actions {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.doc-ver-btn { font-size: 0.8rem; padding: 6px 12px; }
 
 /* ── Filter Bar ── */
 .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -1532,10 +1543,9 @@ h1, h2, h3, h4 {
   .vet-card-actions { flex-wrap: wrap; }
 
   /* ── Documentos ── */
-  #documents-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .doc-card { padding: 16px 12px; }
-  .doc-card-actions { flex-direction: column; gap: 6px; }
-  .doc-card-actions button { width: 100%; }
+  .doc-row { padding: 12px 14px; gap: 10px; }
+  .doc-row-title { font-size: 0.85rem; }
+  .doc-ver-btn { padding: 5px 10px; }
 
   /* ── Modal ── */
   #modal-overlay { align-items: flex-end; }
@@ -1569,7 +1579,7 @@ h1, h2, h3, h4 {
 @media (max-width: 480px) {
   .section { padding: 12px; }
   .stats-grid { gap: 8px; }
-  #documents-grid { grid-template-columns: 1fr; }
+
   .apt-date-day { font-size: 1.5rem; }
   .list-item-actions { padding-left: 0; }
 }
