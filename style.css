@@ -1064,6 +1064,33 @@ h1, h2, h3, h4 {
 }
 .chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
+/* ── Recurring Vaccines/Dewormings ── */
+.recur-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(0,105,77,0.1); color: var(--primary);
+  border-radius: var(--radius-full);
+  font-size: 0.7rem; font-weight: 600;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.recur-badge i { font-size: 0.65rem; }
+.recurring-field {
+  background: rgba(0,105,77,0.04);
+  border: 1px dashed rgba(0,105,77,0.3);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-top: 6px;
+}
+.recurring-field label {
+  font-size: 0.8rem; color: var(--text-muted);
+  display: block; margin-bottom: 4px;
+}
+.recurring-hint {
+  font-size: 0.72rem; color: var(--text-light);
+  margin-top: 4px;
+  font-style: italic;
+}
+
 /* ── Mobile Bottom Nav ── */
 .mobile-nav {
   display: none;

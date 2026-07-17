@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = '2026-07-16 18:45';
+const BUILD         = '2026-07-16 20:30';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -918,20 +918,30 @@ function renderVaccines() {
   }
   container.innerHTML = list.map(v => {
     const dueAlert = v.next_due_date && v.next_due_date < today
-      ? `<span class="due-alert">VENCIDA desde ${formatDate(v.next_due_date)}</span>`
+      ? `<span class="due-alert"><i aria-hidden="true" class="fa-solid fa-circle-exclamation"></i> VENCIDA desde ${formatDate(v.next_due_date)}</span>`
       : v.next_due_date && v.next_due_date <= in30
-      ? `<span class="due-soon">Refuerzo pronto: ${formatDate(v.next_due_date)}</span>`
-      : v.next_due_date ? `<span class="text-muted">Próximo refuerzo: ${formatDate(v.next_due_date)}</span>` : '';
+      ? `<span class="due-soon"><i aria-hidden="true" class="fa-solid fa-clock"></i> Refuerzo pronto: ${formatDate(v.next_due_date)}</span>`
+      : v.next_due_date ? `<span class="text-muted">Proximo refuerzo: ${formatDate(v.next_due_date)}</span>` : '';
+    const recurBadge = v.interval_months
+      ? `<span class="recur-badge"><i aria-hidden="true" class="fa-solid fa-rotate"></i> Cada ${v.interval_months} mes${v.interval_months > 1 ? 'es' : ''}</span>`
+      : '';
 
     return `<div class="list-item">
       <div class="list-item-icon"><i aria-hidden="true" class="fa-solid fa-syringe"></i></div>
       <div class="list-item-body">
-        <h4>${v.vaccine_name} — ${v.cats?.name}</h4>
-        <p>Aplicada: ${formatDate(v.date_applied)} — ${v.veterinarians?.name || '—'}</p>
-        ${v.vaccine_brand ? `<p>Marca: ${v.vaccine_brand} ${v.batch_number ? '· Lote: ' + v.batch_number : ''}</p>` : ''}
+        <h4>${v.vaccine_name} &mdash; ${v.cats?.name} ${recurBadge}</h4>
+        <p>Aplicada: ${formatDate(v.date_applied)} &mdash; ${v.veterinarians?.name || '&mdash;'}</p>
+        ${v.vaccine_brand ? `<p>Marca: ${v.vaccine_brand}${v.batch_number ? ' &middot; Lote: ' + v.batch_number : ''}</p>` : ''}
         ${dueAlert}
       </div>
       <div class="list-item-actions">
+        ${v.interval_months ? `
+          <button class="btn-primary" onclick="registerNewVaccineDose('${v.id}')">
+            <i aria-hidden="true" class="fa-solid fa-syringe"></i> Nueva dosis
+          </button>
+          <button class="btn-secondary" onclick="stopRecurring('vaccines','${v.id}')">
+            <i aria-hidden="true" class="fa-solid fa-stop"></i> Detener
+          </button>` : ''}
         <button class="btn-secondary" onclick="showVaccineForm('${v.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
         <button class="btn-danger" onclick="confirmDelete('vaccine','${v.id}','vacuna')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
       </div>
@@ -939,27 +949,44 @@ function renderVaccines() {
   }).join('');
 }
 
-function showVaccineForm(vacId = null) {
+function showVaccineForm(vacId = null, prefill = null) {
   const v = vacId ? state.vaccines.find(x => x.id === vacId) : null;
-  const catOpts = state.cats.map(c => `<option value="${c.id}" ${v?.cat_id===c.id?'selected':''}>${c.name}</option>`).join('');
-  const vetOpts = '<option value="">-- Sin asignar --</option>' + state.vets.map(x => `<option value="${x.id}" ${v?.vet_id===x.id?'selected':''}>${x.name}</option>`).join('');
+  const data = prefill || v;
+  const catOpts = state.cats.map(c => `<option value="${c.id}" ${data?.cat_id===c.id?'selected':''}>${c.name}</option>`).join('');
+  const vetOpts = '<option value="">-- Sin asignar --</option>' + state.vets.map(x => `<option value="${x.id}" ${data?.vet_id===x.id?'selected':''}>${x.name}</option>`).join('');
 
-  openModal(v ? 'Editar vacuna' : 'Registrar Vacuna', `
-    <form onsubmit="saveVaccine(event,'${vacId || ''}')">
+  openModal(vacId && !prefill ? 'Editar vacuna' : 'Registrar Vacuna', `
+    <form onsubmit="saveVaccine(event,'${prefill ? '' : (vacId || '')}')">
       <div class="field-row">
         <div class="field"><label>Gato *</label><select name="cat_id" required>${catOpts}</select></div>
         <div class="field"><label>Veterinario</label><select name="vet_id">${vetOpts}</select></div>
       </div>
-      <div class="field"><label>Nombre de la vacuna *</label><input type="text" name="vaccine_name" value="${v?.vaccine_name||''}" required placeholder="Ej: Triple felina, Rabia..."></div>
-      <div class="field-row">
-        <div class="field"><label>Marca</label><input type="text" name="vaccine_brand" value="${v?.vaccine_brand||''}"></div>
-        <div class="field"><label>Número de lote</label><input type="text" name="batch_number" value="${v?.batch_number||''}"></div>
+      <div class="field"><label>Nombre de la vacuna *</label>
+        <input type="text" name="vaccine_name" value="${data?.vaccine_name||''}" required placeholder="Ej: Triple felina, Rabia&hellip;">
       </div>
       <div class="field-row">
-        <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-days"></i> Fecha aplicacion *</label><input type="date" name="date_applied" value="${v?.date_applied||todayStr()}" required></div>
-        <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-plus"></i> Proximo refuerzo</label><input type="date" name="next_due_date" value="${v?.next_due_date||''}"></div>
+        <div class="field"><label>Marca</label><input type="text" name="vaccine_brand" value="${data?.vaccine_brand||''}"></div>
+        <div class="field"><label>Numero de lote</label><input type="text" name="batch_number" value="${data?.batch_number||''}"></div>
       </div>
-      <div class="field"><label>Notas</label><textarea name="notes">${v?.notes||''}</textarea></div>
+      <div class="field-row">
+        <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-days"></i> Fecha aplicacion *</label>
+          <input type="date" name="date_applied" id="vac-date-applied" value="${prefill?.date_applied || data?.date_applied || todayStr()}" required
+            oninput="autoCalcDue('vac-date-applied','vac-interval','vac-next-due')">
+        </div>
+        <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-plus"></i> Proximo refuerzo</label>
+          <input type="date" name="next_due_date" id="vac-next-due" value="${data?.next_due_date||''}">
+        </div>
+      </div>
+      <div class="field recurring-field">
+        <label><i aria-hidden="true" class="fa-solid fa-rotate"></i> Repetir cada (meses)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="number" name="interval_months" id="vac-interval" min="1" max="36" step="1"
+            value="${data?.interval_months||''}" placeholder="Ej: 3, 6, 12"
+            oninput="autoCalcDue('vac-date-applied','vac-interval','vac-next-due')">
+          <span class="text-muted" style="font-size:.8rem;white-space:nowrap">meses &mdash; dejar vacio para no repetir</span>
+        </div>
+      </div>
+      <div class="field"><label>Notas</label><textarea name="notes">${data?.notes||''}</textarea></div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" onclick="closeModalDirect()"><i aria-hidden="true" class="fa-solid fa-xmark"></i> Cancelar</button>
         <button type="submit" class="btn-primary"><i aria-hidden="true" class="fa-solid fa-floppy-disk"></i> Guardar</button>
@@ -968,18 +995,48 @@ function showVaccineForm(vacId = null) {
   `);
 }
 
+function autoCalcDue(dateId, intervalId, dueId) {
+  const dateEl     = document.getElementById(dateId);
+  const intervalEl = document.getElementById(intervalId);
+  const dueEl      = document.getElementById(dueId);
+  if (!dateEl || !intervalEl || !dueEl) return;
+  if (dateEl.value && intervalEl.value) {
+    dueEl.value = addMonths(dateEl.value, intervalEl.value);
+  }
+}
+
+function registerNewVaccineDose(vacId) {
+  const v = state.vaccines.find(x => x.id === vacId);
+  if (!v) return;
+  const today = todayStr();
+  showVaccineForm(null, {
+    cat_id:        v.cat_id,
+    vet_id:        v.vet_id,
+    vaccine_name:  v.vaccine_name,
+    vaccine_brand: v.vaccine_brand,
+    interval_months: v.interval_months,
+    date_applied:  today,
+    next_due_date: v.interval_months ? addMonths(today, v.interval_months) : '',
+  });
+}
+
 async function saveVaccine(e, vacId) {
   e.preventDefault();
   const fd = new FormData(e.target);
+  const interval = fd.get('interval_months') ? parseInt(fd.get('interval_months')) : null;
+  const dateApplied = fd.get('date_applied');
+  const nextDue = interval ? addMonths(dateApplied, interval) : (fd.get('next_due_date') || null);
+
   const payload = {
-    cat_id:        fd.get('cat_id'),
-    vet_id:        fd.get('vet_id') || null,
-    vaccine_name:  fd.get('vaccine_name'),
-    vaccine_brand: fd.get('vaccine_brand') || null,
-    batch_number:  fd.get('batch_number') || null,
-    date_applied:  fd.get('date_applied'),
-    next_due_date: fd.get('next_due_date') || null,
-    notes:         fd.get('notes') || null,
+    cat_id:          fd.get('cat_id'),
+    vet_id:          fd.get('vet_id') || null,
+    vaccine_name:    fd.get('vaccine_name'),
+    vaccine_brand:   fd.get('vaccine_brand') || null,
+    batch_number:    fd.get('batch_number') || null,
+    date_applied:    dateApplied,
+    next_due_date:   nextDue,
+    interval_months: interval,
+    notes:           fd.get('notes') || null,
   };
   let err;
   if (vacId) {
@@ -1013,20 +1070,30 @@ function renderDewormings() {
   container.innerHTML = list.map(d => {
     const typeLabel = { interno: 'Interno', externo: 'Externo', ambos: 'Interno+Externo' }[d.type] || '';
     const dueAlert = d.next_due_date && d.next_due_date < today
-      ? `<span class="due-alert">VENCIDA desde ${formatDate(d.next_due_date)}</span>`
+      ? `<span class="due-alert"><i aria-hidden="true" class="fa-solid fa-circle-exclamation"></i> VENCIDA desde ${formatDate(d.next_due_date)}</span>`
       : d.next_due_date && d.next_due_date <= in30
-      ? `<span class="due-soon">Pronto: ${formatDate(d.next_due_date)}</span>`
-      : d.next_due_date ? `<span class="text-muted">Próxima: ${formatDate(d.next_due_date)}</span>` : '';
+      ? `<span class="due-soon"><i aria-hidden="true" class="fa-solid fa-clock"></i> Pronto: ${formatDate(d.next_due_date)}</span>`
+      : d.next_due_date ? `<span class="text-muted">Proxima: ${formatDate(d.next_due_date)}</span>` : '';
+    const recurBadge = d.interval_months
+      ? `<span class="recur-badge"><i aria-hidden="true" class="fa-solid fa-rotate"></i> Cada ${d.interval_months} mes${d.interval_months > 1 ? 'es' : ''}</span>`
+      : '';
 
     return `<div class="list-item">
       <div class="list-item-icon"><i aria-hidden="true" class="fa-solid fa-tablets"></i></div>
       <div class="list-item-body">
-        <h4>${d.product_name} — ${d.cats?.name}</h4>
-        <p>${formatDate(d.date_applied)} — ${typeLabel} ${d.dose ? '— Dosis: ' + d.dose : ''}</p>
-        <p>${d.veterinarians?.name || '—'}</p>
+        <h4>${d.product_name} &mdash; ${d.cats?.name} ${recurBadge}</h4>
+        <p>${formatDate(d.date_applied)} &mdash; ${typeLabel}${d.dose ? ' &middot; Dosis: ' + d.dose : ''}</p>
+        <p>${d.veterinarians?.name || '&mdash;'}</p>
         ${dueAlert}
       </div>
       <div class="list-item-actions">
+        ${d.interval_months ? `
+          <button class="btn-primary" onclick="registerNewDewormingDose('${d.id}')">
+            <i aria-hidden="true" class="fa-solid fa-tablets"></i> Nueva dosis
+          </button>
+          <button class="btn-secondary" onclick="stopRecurring('dewormings','${d.id}')">
+            <i aria-hidden="true" class="fa-solid fa-stop"></i> Detener
+          </button>` : ''}
         <button class="btn-secondary" onclick="showDewormingForm('${d.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
         <button class="btn-danger" onclick="confirmDelete('deworming','${d.id}','desparasitacion')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
       </div>
@@ -1034,35 +1101,52 @@ function renderDewormings() {
   }).join('');
 }
 
-function showDewormingForm(dewId = null) {
+function showDewormingForm(dewId = null, prefill = null) {
   const d = dewId ? state.dewormings.find(x => x.id === dewId) : null;
-  const catOpts = state.cats.map(c => `<option value="${c.id}" ${d?.cat_id===c.id?'selected':''}>${c.name}</option>`).join('');
-  const vetOpts = '<option value="">-- Sin asignar --</option>' + state.vets.map(v => `<option value="${v.id}" ${d?.vet_id===v.id?'selected':''}>${v.name}</option>`).join('');
+  const data = prefill || d;
+  const catOpts = state.cats.map(c => `<option value="${c.id}" ${data?.cat_id===c.id?'selected':''}>${c.name}</option>`).join('');
+  const vetOpts = '<option value="">-- Sin asignar --</option>' + state.vets.map(v => `<option value="${v.id}" ${data?.vet_id===v.id?'selected':''}>${v.name}</option>`).join('');
 
-  openModal(d ? 'Editar desparasitación' : 'Registrar Desparasitación', `
-    <form onsubmit="saveDeworming(event,'${dewId || ''}')">
+  openModal(dewId && !prefill ? 'Editar desparasitacion' : 'Registrar Desparasitacion', `
+    <form onsubmit="saveDeworming(event,'${prefill ? '' : (dewId || '')}')">
       <div class="field-row">
         <div class="field"><label>Gato *</label><select name="cat_id" required>${catOpts}</select></div>
         <div class="field"><label>Veterinario</label><select name="vet_id">${vetOpts}</select></div>
       </div>
-      <div class="field"><label>Producto *</label><input type="text" name="product_name" value="${d?.product_name||''}" required placeholder="Ej: Stronghold, Advocate..."></div>
+      <div class="field"><label>Producto *</label>
+        <input type="text" name="product_name" value="${data?.product_name||''}" required placeholder="Ej: Stronghold, Advocate&hellip;">
+      </div>
       <div class="field-row">
         <div class="field">
           <label>Tipo</label>
           <select name="type">
             <option value="">-- Seleccionar --</option>
-            <option value="interno"  ${d?.type==='interno' ?'selected':''}>Interno</option>
-            <option value="externo"  ${d?.type==='externo' ?'selected':''}>Externo</option>
-            <option value="ambos"    ${d?.type==='ambos'   ?'selected':''}>Interno+Externo</option>
+            <option value="interno" ${data?.type==='interno'?'selected':''}>Interno</option>
+            <option value="externo" ${data?.type==='externo'?'selected':''}>Externo</option>
+            <option value="ambos"   ${data?.type==='ambos'  ?'selected':''}>Interno+Externo</option>
           </select>
         </div>
-        <div class="field"><label>Dosis</label><input type="text" name="dose" value="${d?.dose||''}" placeholder="Ej: 0.5 ml"></div>
+        <div class="field"><label>Dosis</label><input type="text" name="dose" value="${data?.dose||''}" placeholder="Ej: 0.5 ml"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-days"></i> Fecha aplicacion *</label><input type="date" name="date_applied" value="${d?.date_applied||todayStr()}" required></div>
-        <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-plus"></i> Proxima aplicacion</label><input type="date" name="next_due_date" value="${d?.next_due_date||''}"></div>
+        <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-days"></i> Fecha aplicacion *</label>
+          <input type="date" name="date_applied" id="dew-date-applied" value="${prefill?.date_applied || data?.date_applied || todayStr()}" required
+            oninput="autoCalcDue('dew-date-applied','dew-interval','dew-next-due')">
+        </div>
+        <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-plus"></i> Proxima aplicacion</label>
+          <input type="date" name="next_due_date" id="dew-next-due" value="${data?.next_due_date||''}">
+        </div>
       </div>
-      <div class="field"><label>Notas</label><textarea name="notes">${d?.notes||''}</textarea></div>
+      <div class="field recurring-field">
+        <label><i aria-hidden="true" class="fa-solid fa-rotate"></i> Repetir cada (meses)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="number" name="interval_months" id="dew-interval" min="1" max="36" step="1"
+            value="${data?.interval_months||''}" placeholder="Ej: 1, 3, 6"
+            oninput="autoCalcDue('dew-date-applied','dew-interval','dew-next-due')">
+          <span class="text-muted" style="font-size:.8rem;white-space:nowrap">meses &mdash; dejar vacio para no repetir</span>
+        </div>
+      </div>
+      <div class="field"><label>Notas</label><textarea name="notes">${data?.notes||''}</textarea></div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" onclick="closeModalDirect()"><i aria-hidden="true" class="fa-solid fa-xmark"></i> Cancelar</button>
         <button type="submit" class="btn-primary"><i aria-hidden="true" class="fa-solid fa-floppy-disk"></i> Guardar</button>
@@ -1071,18 +1155,48 @@ function showDewormingForm(dewId = null) {
   `);
 }
 
+function registerNewDewormingDose(dewId) {
+  const d = state.dewormings.find(x => x.id === dewId);
+  if (!d) return;
+  const today = todayStr();
+  showDewormingForm(null, {
+    cat_id:          d.cat_id,
+    vet_id:          d.vet_id,
+    product_name:    d.product_name,
+    type:            d.type,
+    dose:            d.dose,
+    interval_months: d.interval_months,
+    date_applied:    today,
+    next_due_date:   d.interval_months ? addMonths(today, d.interval_months) : '',
+  });
+}
+
+async function stopRecurring(table, id) {
+  const { error } = await sb.from(table).update({ interval_months: null }).eq('id', id);
+  if (error) return showToast('Error: ' + error.message, 'error');
+  showToast('Repeticion detenida', 'success');
+  await loadAllData();
+  if (table === 'vaccines') renderVaccines();
+  else renderDewormings();
+}
+
 async function saveDeworming(e, dewId) {
   e.preventDefault();
   const fd = new FormData(e.target);
+  const interval = fd.get('interval_months') ? parseInt(fd.get('interval_months')) : null;
+  const dateApplied = fd.get('date_applied');
+  const nextDue = interval ? addMonths(dateApplied, interval) : (fd.get('next_due_date') || null);
+
   const payload = {
-    cat_id:        fd.get('cat_id'),
-    vet_id:        fd.get('vet_id') || null,
-    product_name:  fd.get('product_name'),
-    type:          fd.get('type') || null,
-    dose:          fd.get('dose') || null,
-    date_applied:  fd.get('date_applied'),
-    next_due_date: fd.get('next_due_date') || null,
-    notes:         fd.get('notes') || null,
+    cat_id:          fd.get('cat_id'),
+    vet_id:          fd.get('vet_id') || null,
+    product_name:    fd.get('product_name'),
+    type:            fd.get('type') || null,
+    dose:            fd.get('dose') || null,
+    date_applied:    dateApplied,
+    next_due_date:   nextDue,
+    interval_months: interval,
+    notes:           fd.get('notes') || null,
   };
   let err;
   if (dewId) {
@@ -1310,6 +1424,15 @@ function requestNotifPermission() {
       });
     }, 3000);
   }
+}
+
+// ──────────────────────────────────────────────
+// UTILIDAD: sumar meses a una fecha
+// ──────────────────────────────────────────────
+function addMonths(dateStr, months) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setMonth(d.getMonth() + parseInt(months));
+  return d.toISOString().split('T')[0];
 }
 
 // ──────────────────────────────────────────────
