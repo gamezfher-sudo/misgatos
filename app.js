@@ -919,8 +919,12 @@ function closeAptMenus() {
 }
 
 function toggleVetMenu(e, vetId) {
+  toggleCardMenu(e, `vet-menu-${vetId}`);
+}
+
+function toggleCardMenu(e, menuId) {
   e.stopPropagation();
-  const menu = document.getElementById(`vet-menu-${vetId}`);
+  const menu = document.getElementById(menuId);
   const isOpen = menu?.classList.contains('open');
   closeAptMenus();
   if (!isOpen) menu?.classList.add('open');
@@ -1308,34 +1312,64 @@ function renderVaccines() {
     return;
   }
   container.innerHTML = list.map(v => {
-    const dueAlert = v.next_due_date && v.next_due_date < today
-      ? `<span class="due-alert"><i aria-hidden="true" class="fa-solid fa-circle-exclamation"></i> VENCIDA desde ${formatDate(v.next_due_date)}</span>`
-      : v.next_due_date && v.next_due_date <= in30
-      ? `<span class="due-soon"><i aria-hidden="true" class="fa-solid fa-clock"></i> Refuerzo pronto: ${formatDate(v.next_due_date)}</span>`
-      : v.next_due_date ? `<span class="text-muted">Proximo refuerzo: ${formatDate(v.next_due_date)}</span>` : '';
+    const isVencida = v.next_due_date && v.next_due_date < today;
+    const isProxima = v.next_due_date && v.next_due_date <= in30 && !isVencida;
+    const nextClass = isVencida ? 'dose-value-alert' : isProxima ? 'dose-value-soon' : '';
+    const nextLabel = isVencida
+      ? `<span class="dose-badge-alert"><i aria-hidden="true" class="fa-solid fa-circle-exclamation"></i> Vencida</span>`
+      : isProxima
+      ? `<span class="dose-badge-soon"><i aria-hidden="true" class="fa-solid fa-clock"></i> Próximo</span>`
+      : '';
     const recurBadge = v.interval_months
       ? `<span class="recur-badge"><i aria-hidden="true" class="fa-solid fa-rotate"></i> Cada ${v.interval_months} mes${v.interval_months > 1 ? 'es' : ''}</span>`
       : '';
 
-    return `<div class="list-item">
-      <div class="list-item-icon">${catAvatarHtml(v.cats)}</div>
-      <div class="list-item-body">
-        <h4>${v.vaccine_name} &mdash; ${v.cats?.name} ${recurBadge}</h4>
-        <p>Aplicada: ${formatDate(v.date_applied)} &mdash; ${v.veterinarians?.name || '&mdash;'}</p>
-        ${v.vaccine_brand ? `<p>Marca: ${v.vaccine_brand}${v.batch_number ? ' &middot; Lote: ' + v.batch_number : ''}</p>` : ''}
-        ${dueAlert}
-      </div>
-      <div class="list-item-actions">
-        ${v.interval_months ? `
-          <button class="btn-primary" onclick="registerNewVaccineDose('${v.id}')">
-            <i aria-hidden="true" class="fa-solid fa-syringe"></i> Nueva dosis
+    return `<div class="dose-card">
+      <div class="dose-card-header">
+        <div class="dose-card-title">
+          ${catAvatarHtml(v.cats)}
+          <div class="dose-card-title-text">
+            <h4>${v.vaccine_name} <span class="dose-cat-name">&mdash; ${v.cats?.name}</span></h4>
+            <div class="dose-card-meta">
+              ${recurBadge}
+              ${v.vaccine_brand ? `<span class="dose-meta-text">${v.vaccine_brand}${v.batch_number ? ' · Lote ' + v.batch_number : ''}</span>` : ''}
+              ${v.veterinarians?.name ? `<span class="dose-meta-text"><i aria-hidden="true" class="fa-solid fa-user-doctor"></i> ${v.veterinarians.name}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="apt-menu-wrap">
+          <button class="apt-menu-btn" onclick="toggleCardMenu(event,'vac-menu-${v.id}')" aria-label="Opciones" aria-haspopup="true">
+            <i aria-hidden="true" class="fa-solid fa-ellipsis-vertical"></i>
           </button>
-          <button class="btn-secondary" onclick="stopRecurring('vaccines','${v.id}')">
-            <i aria-hidden="true" class="fa-solid fa-stop"></i> Detener
-          </button>` : ''}
-        <button class="btn-secondary" onclick="showVaccineForm('${v.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
-        <button class="btn-danger" onclick="confirmDelete('vaccine','${v.id}','vacuna')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
+          <div class="apt-menu-dropdown" id="vac-menu-${v.id}" role="menu">
+            <button role="menuitem" onclick="showVaccineForm('${v.id}');closeAptMenus()">
+              <i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar
+            </button>
+            ${v.interval_months ? `<button role="menuitem" onclick="stopRecurring('vaccines','${v.id}');closeAptMenus()">
+              <i aria-hidden="true" class="fa-solid fa-stop"></i> Detener
+            </button>` : ''}
+            <button role="menuitem" class="apt-menu-danger" onclick="confirmDelete('vaccine','${v.id}','vacuna');closeAptMenus()">
+              <i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar
+            </button>
+          </div>
+        </div>
       </div>
+      <div class="dose-timeline">
+        <div class="dose-col">
+          <span class="dose-col-label">Aplicada</span>
+          <span class="dose-col-value">${formatDate(v.date_applied)}</span>
+        </div>
+        <div class="dose-arrow"><i aria-hidden="true" class="fa-solid fa-arrow-right"></i></div>
+        <div class="dose-col">
+          <span class="dose-col-label">Próxima dosis ${nextLabel}</span>
+          <span class="dose-col-value ${nextClass}">${v.next_due_date ? formatDate(v.next_due_date) : '&mdash;'}</span>
+        </div>
+      </div>
+      ${v.interval_months ? `<div class="dose-card-footer">
+        <button class="btn-primary dose-btn" onclick="registerNewVaccineDose('${v.id}')">
+          <i aria-hidden="true" class="fa-solid fa-syringe"></i> Nueva dosis
+        </button>
+      </div>` : ''}
     </div>`;
   }).join('');
 }
@@ -1460,34 +1494,64 @@ function renderDewormings() {
   }
   container.innerHTML = list.map(d => {
     const typeLabel = { interno: 'Interno', externo: 'Externo', ambos: 'Interno+Externo' }[d.type] || '';
-    const dueAlert = d.next_due_date && d.next_due_date < today
-      ? `<span class="due-alert"><i aria-hidden="true" class="fa-solid fa-circle-exclamation"></i> VENCIDA desde ${formatDate(d.next_due_date)}</span>`
-      : d.next_due_date && d.next_due_date <= in30
-      ? `<span class="due-soon"><i aria-hidden="true" class="fa-solid fa-clock"></i> Pronto: ${formatDate(d.next_due_date)}</span>`
-      : d.next_due_date ? `<span class="text-muted">Proxima: ${formatDate(d.next_due_date)}</span>` : '';
+    const isVencida = d.next_due_date && d.next_due_date < today;
+    const isProxima = d.next_due_date && d.next_due_date <= in30 && !isVencida;
+    const nextClass = isVencida ? 'dose-value-alert' : isProxima ? 'dose-value-soon' : '';
+    const nextLabel = isVencida
+      ? `<span class="dose-badge-alert"><i aria-hidden="true" class="fa-solid fa-circle-exclamation"></i> Vencida</span>`
+      : isProxima
+      ? `<span class="dose-badge-soon"><i aria-hidden="true" class="fa-solid fa-clock"></i> Próxima</span>`
+      : '';
     const recurBadge = d.interval_months
       ? `<span class="recur-badge"><i aria-hidden="true" class="fa-solid fa-rotate"></i> Cada ${d.interval_months} mes${d.interval_months > 1 ? 'es' : ''}</span>`
       : '';
 
-    return `<div class="list-item">
-      <div class="list-item-icon">${catAvatarHtml(d.cats)}</div>
-      <div class="list-item-body">
-        <h4>${d.product_name} &mdash; ${d.cats?.name} ${recurBadge}</h4>
-        <p>${formatDate(d.date_applied)} &mdash; ${typeLabel}${d.dose ? ' &middot; Dosis: ' + d.dose : ''}</p>
-        <p>${d.veterinarians?.name || '&mdash;'}</p>
-        ${dueAlert}
-      </div>
-      <div class="list-item-actions">
-        ${d.interval_months ? `
-          <button class="btn-primary" onclick="registerNewDewormingDose('${d.id}')">
-            <i aria-hidden="true" class="fa-solid fa-tablets"></i> Nueva dosis
+    return `<div class="dose-card">
+      <div class="dose-card-header">
+        <div class="dose-card-title">
+          ${catAvatarHtml(d.cats)}
+          <div class="dose-card-title-text">
+            <h4>${d.product_name} <span class="dose-cat-name">&mdash; ${d.cats?.name}</span></h4>
+            <div class="dose-card-meta">
+              ${recurBadge}
+              ${typeLabel ? `<span class="dose-meta-text">${typeLabel}${d.dose ? ' · ' + d.dose : ''}</span>` : ''}
+              ${d.veterinarians?.name ? `<span class="dose-meta-text"><i aria-hidden="true" class="fa-solid fa-user-doctor"></i> ${d.veterinarians.name}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="apt-menu-wrap">
+          <button class="apt-menu-btn" onclick="toggleCardMenu(event,'dew-menu-${d.id}')" aria-label="Opciones" aria-haspopup="true">
+            <i aria-hidden="true" class="fa-solid fa-ellipsis-vertical"></i>
           </button>
-          <button class="btn-secondary" onclick="stopRecurring('dewormings','${d.id}')">
-            <i aria-hidden="true" class="fa-solid fa-stop"></i> Detener
-          </button>` : ''}
-        <button class="btn-secondary" onclick="showDewormingForm('${d.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
-        <button class="btn-danger" onclick="confirmDelete('deworming','${d.id}','desparasitacion')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
+          <div class="apt-menu-dropdown" id="dew-menu-${d.id}" role="menu">
+            <button role="menuitem" onclick="showDewormingForm('${d.id}');closeAptMenus()">
+              <i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar
+            </button>
+            ${d.interval_months ? `<button role="menuitem" onclick="stopRecurring('dewormings','${d.id}');closeAptMenus()">
+              <i aria-hidden="true" class="fa-solid fa-stop"></i> Detener
+            </button>` : ''}
+            <button role="menuitem" class="apt-menu-danger" onclick="confirmDelete('deworming','${d.id}','desparasitacion');closeAptMenus()">
+              <i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar
+            </button>
+          </div>
+        </div>
       </div>
+      <div class="dose-timeline">
+        <div class="dose-col">
+          <span class="dose-col-label">Aplicada</span>
+          <span class="dose-col-value">${formatDate(d.date_applied)}</span>
+        </div>
+        <div class="dose-arrow"><i aria-hidden="true" class="fa-solid fa-arrow-right"></i></div>
+        <div class="dose-col">
+          <span class="dose-col-label">Próxima dosis ${nextLabel}</span>
+          <span class="dose-col-value ${nextClass}">${d.next_due_date ? formatDate(d.next_due_date) : '&mdash;'}</span>
+        </div>
+      </div>
+      ${d.interval_months ? `<div class="dose-card-footer">
+        <button class="btn-primary dose-btn" onclick="registerNewDewormingDose('${d.id}')">
+          <i aria-hidden="true" class="fa-solid fa-tablets"></i> Nueva dosis
+        </button>
+      </div>` : ''}
     </div>`;
   }).join('');
 }
