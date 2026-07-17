@@ -1138,6 +1138,7 @@ h1, h2, h3, h4 {
   border-radius: var(--radius-full);
   font-size: 0.72rem; font-weight: 600; padding: 3px 10px;
   text-decoration: none; white-space: nowrap;
+  border: none; cursor: pointer; font-family: inherit;
   transition: background 0.12s;
 }
 .cons-doc-chip:hover { background: rgba(0,105,77,0.18); }

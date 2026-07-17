@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = '2026-07-16 22:00';
+const BUILD         = '2026-07-16 22:30';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -800,7 +800,7 @@ function renderConsultations() {
         ${consDocs.map(d => {
           const icon = { receta: 'fa-file-prescription', analisis: 'fa-flask', rayos_x: 'fa-x-ray', otro: 'fa-file' }[d.type] || 'fa-file';
           return d.file_url
-            ? `<a href="${d.file_url}" target="_blank" rel="noopener noreferrer" class="cons-doc-chip"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${d.title}</a>`
+            ? `<button type="button" class="cons-doc-chip" onclick="window.open('${d.file_url}','_blank')"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${d.title}</button>`
             : `<span class="cons-doc-chip cons-doc-chip-nofile"><i aria-hidden="true" class="fa-solid ${icon}"></i> ${d.title}</span>`;
         }).join('')}
       </div>
@@ -819,6 +819,7 @@ function renderConsultations() {
           ${docsChips}
         </div>
         <div class="list-item-actions">
+          <button class="btn-secondary" onclick="showConsDocModal('${c.id}')"><i aria-hidden="true" class="fa-solid fa-paperclip"></i> Docs${consDocs.length ? ` (${consDocs.length})` : ''}</button>
           <button class="btn-secondary" onclick="showConsultationForm('${c.id}')"><i aria-hidden="true" class="fa-solid fa-pen-to-square"></i> Editar</button>
           <button class="btn-danger" onclick="confirmDelete('consultation','${c.id}','consulta')"><i aria-hidden="true" class="fa-solid fa-trash-can"></i> Eliminar</button>
         </div>
@@ -947,14 +948,115 @@ function addConsDocRow() {
   container.appendChild(row);
 }
 
-async function unlinkConsDoc(docId) {
+async function unlinkConsDoc(docId, consId = null) {
   const { error } = await sb.from('documents').update({ consultation_id: null }).eq('id', docId);
   if (error) return showToast('Error: ' + error.message, 'error');
   await loadAllData();
-  // Re-render the existing docs section without closing the modal
-  const existingSection = document.querySelector('.cons-existing-docs');
-  if (existingSection) existingSection.remove();
   showToast('Documento desvinculado', 'success');
+  if (consId) {
+    // Estamos en el modal de documentos — refrescar lista en-sitio
+    const listEl = document.getElementById('cons-modal-docs-list');
+    if (listEl) listEl.innerHTML = _renderConsDocsList(consId);
+    renderConsultations();
+  } else {
+    // Estamos en el formulario de consulta — quitar sección
+    const existingSection = document.querySelector('.cons-existing-docs');
+    if (existingSection) existingSection.remove();
+  }
+}
+
+function _renderConsDocsList(consId) {
+  const docs = state.documents.filter(d => d.consultation_id === consId);
+  const typeIcon  = { receta: 'fa-file-prescription', analisis: 'fa-flask', rayos_x: 'fa-x-ray', otro: 'fa-file' };
+  const typeLabel = { receta: 'Receta', analisis: 'Analisis', rayos_x: 'Rayos X', otro: 'Otro' };
+  if (!docs.length) return '<p style="font-size:.83rem;color:var(--text-muted);margin-bottom:6px">Sin documentos adjuntos aun.</p>';
+  return docs.map(d => `
+    <div class="cons-existing-doc-row">
+      <i aria-hidden="true" class="fa-solid ${typeIcon[d.type] || 'fa-file'}"></i>
+      <span class="cons-existing-doc-title">${d.title}</span>
+      <span class="badge badge-gray" style="font-size:.68rem">${typeLabel[d.type] || 'Otro'}</span>
+      ${d.file_url ? `<button type="button" class="btn-link-sm" onclick="window.open('${d.file_url}','_blank')">Ver</button>` : ''}
+      <button type="button" class="btn-unlink" onclick="unlinkConsDoc('${d.id}','${consId}')" aria-label="Quitar">
+        <i aria-hidden="true" class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  `).join('');
+}
+
+function showConsDocModal(consId) {
+  _consDocCounter = 0;
+  const cons = state.consultations.find(x => x.id === consId);
+  const catId     = cons?.cat_id;
+  const visitDate = cons?.visit_date;
+  const catName   = cons?.cats?.name || '';
+
+  openModal(`Documentos — ${catName} · ${formatDate(visitDate)}`, `
+    <div class="cons-existing-docs" id="cons-modal-docs-list">
+      ${_renderConsDocsList(consId)}
+    </div>
+    <div class="cons-docs-section" style="margin-top:12px">
+      <div class="cons-docs-header">
+        <span><i aria-hidden="true" class="fa-solid fa-cloud-arrow-up"></i> Subir documentos</span>
+        <button type="button" class="btn-add-doc" onclick="addConsDocRow()">
+          <i aria-hidden="true" class="fa-solid fa-plus"></i> Agregar
+        </button>
+      </div>
+      <div id="cons-doc-rows"></div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="closeModalDirect()">
+        <i aria-hidden="true" class="fa-solid fa-xmark"></i> Cerrar
+      </button>
+      <button type="button" class="btn-primary" onclick="saveConsDocRows('${consId}','${catId}','${visitDate}')">
+        <i aria-hidden="true" class="fa-solid fa-cloud-arrow-up"></i> Subir
+      </button>
+    </div>
+  `);
+  addConsDocRow();
+}
+
+async function saveConsDocRows(consId, catId, visitDate) {
+  const rows = document.querySelectorAll('.cons-doc-row');
+  let uploaded = 0;
+  let errors   = 0;
+  for (const row of rows) {
+    const rowId   = row.id.replace('cons-doc-row-', '');
+    const fileEl  = document.getElementById(`cons-doc-file-${rowId}`);
+    const typeEl  = document.getElementById(`cons-doc-type-${rowId}`);
+    const titleEl = document.getElementById(`cons-doc-title-${rowId}`);
+    const file    = fileEl?.files[0];
+    if (!file) continue;
+    const ext  = file.name.split('.').pop();
+    const path = `${state.user.id}/${Date.now()}_${rowId}.${ext}`;
+    const { error: upErr } = await sb.storage.from('medical-docs').upload(path, file, { upsert: true });
+    if (upErr) { errors++; continue; }
+    const { data: urlData } = await sb.storage.from('medical-docs').createSignedUrl(path, 60 * 60 * 24 * 365);
+    const title = titleEl?.value?.trim() || file.name.replace(/\.[^.]+$/, '');
+    const { error: dbErr } = await sb.from('documents').insert({
+      cat_id: catId, consultation_id: consId,
+      type: typeEl?.value || 'otro', title,
+      date_issued: visitDate || null,
+      file_url: urlData?.signedUrl || null,
+      file_type: file.type,
+    });
+    if (!dbErr) uploaded++; else errors++;
+  }
+
+  await loadAllData();
+
+  // Refrescar lista en el modal sin cerrarlo
+  const listEl = document.getElementById('cons-modal-docs-list');
+  if (listEl) listEl.innerHTML = _renderConsDocsList(consId);
+
+  // Limpiar filas y agregar una nueva lista para seguir subiendo
+  const rowsContainer = document.getElementById('cons-doc-rows');
+  if (rowsContainer) { rowsContainer.innerHTML = ''; addConsDocRow(); }
+
+  renderConsultations();
+
+  if (!uploaded && !errors) return showToast('Selecciona al menos un archivo', 'error');
+  if (errors > 0) showToast(`${errors} archivo(s) no se pudieron subir`, 'error');
+  if (uploaded > 0) showToast(`${uploaded} documento(s) subido(s)`, 'success');
 }
 
 async function saveConsultation(e, consId) {
@@ -1018,7 +1120,7 @@ async function saveConsultation(e, consId) {
   else showToast('Consulta guardada', 'success');
   closeModalDirect();
   await loadAllData();
-  renderConsultations();
+  navigate('consultations');
 }
 
 // ──────────────────────────────────────────────
