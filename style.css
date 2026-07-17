@@ -597,17 +597,31 @@ h1, h2, h3, h4 {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  overflow: hidden;
   box-shadow: var(--shadow);
   transition: box-shadow 0.2s, transform 0.2s;
+  padding-top: 4px;
 }
 .cat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 .cat-card-photo {
   aspect-ratio: 1 / 1;
+  width: calc(100% - 28px);
+  margin: 14px auto 0;
   background: linear-gradient(135deg, var(--primary-pale-solid) 0%, rgba(0,133,98,0.08) 100%);
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; cursor: pointer;
   position: relative;
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  animation: blob-morph 10s ease-in-out infinite;
+  box-shadow: 0 8px 28px rgba(0,105,77,0.12);
+}
+.cat-card:nth-child(2n) .cat-card-photo { animation-delay: -3.3s; }
+.cat-card:nth-child(3n) .cat-card-photo { animation-delay: -6.6s; }
+
+@keyframes blob-morph {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25%       { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  50%       { border-radius: 50% 60% 40% 60% / 40% 50% 60% 40%; }
+  75%       { border-radius: 70% 30% 50% 40% / 30% 70% 40% 60%; }
 }
 .cat-card-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
 .cat-card:hover .cat-card-photo img { transform: scale(1.04); }
