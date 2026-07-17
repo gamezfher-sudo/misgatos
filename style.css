@@ -1307,6 +1307,7 @@ h1, h2, h3, h4 {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 768px) {
+  /* ── Sidebar & Nav ── */
   #sidebar { transform: translateX(-100%); }
   #sidebar.open { transform: translateX(0); }
   #sidebar-overlay {
@@ -1315,26 +1316,102 @@ h1, h2, h3, h4 {
     display: block;
   }
   #sidebar-overlay.hidden { display: none !important; }
-  #content { margin-left: 0; padding-bottom: 64px; }
+  #content { margin-left: 0; padding-bottom: 72px; }
   .mobile-header { display: flex; }
   .mobile-nav { display: flex; }
-  .fab { bottom: 82px; }
-  .section { padding: 20px; }
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .fab { bottom: 86px; }
+  .section { padding: 14px 16px; }
+
+  /* ── Dashboard ── */
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card  { padding: 14px 12px; }
+  .stat-value { font-size: 2rem; }
+  .stat-label { font-size: 0.68rem; }
   .dash-grid  { grid-template-columns: 1fr; }
-  .apt-item   { grid-template-columns: auto auto 1fr; }
-  .apt-actions { flex-direction: row; grid-column: 1 / -1; }
-  .cards-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
-  #modal-box  { max-height: 95vh; }
-  .field-row  { grid-template-columns: 1fr; }
-  .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .dashboard-welcome { flex-direction: column; align-items: flex-start; }
-  .dashboard-welcome h1 { font-size: 1.6rem; }
+  .dashboard-welcome h1 { font-size: 1.4rem; }
+
+  /* ── Section header ── */
+  .section-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .section-header h2 { font-size: 1.3rem; }
+
+  /* ── List items (consultas / vacunas / desparasitaciones) ── */
+  .list-item {
+    flex-wrap: wrap;
+    padding: 14px 14px;
+    gap: 10px;
+  }
+  .list-item-body { min-width: 0; }
+  .list-item-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-left: 52px; /* alinea con el body (42px avatar + 10px gap) */
+  }
+  .list-item-actions .btn-secondary,
+  .list-item-actions .btn-danger {
+    font-size: 0.78rem;
+    padding: 6px 10px;
+  }
+
+  /* ── Citas (Appointments) ── */
+  .apt-item {
+    grid-template-columns: auto auto 1fr;
+    padding: 14px;
+    gap: 10px;
+  }
+  .apt-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+  .apt-actions a,
+  .apt-actions button { font-size: 0.78rem !important; padding: 6px 10px !important; }
+
+  /* ── Veterinarios ── */
+  .cards-grid { grid-template-columns: 1fr; gap: 12px; }
+  .vet-card-actions { flex-wrap: wrap; }
+
+  /* ── Documentos ── */
+  #documents-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .doc-card { padding: 16px 12px; }
+  .doc-card-actions { flex-direction: column; gap: 6px; }
+  .doc-card-actions button { width: 100%; }
+
+  /* ── Modal ── */
+  #modal-overlay { align-items: flex-end; }
+  #modal-box {
+    max-height: 92vh;
+    border-radius: 20px 20px 0 0;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+  .field-row { grid-template-columns: 1fr; }
+  .modal-actions { gap: 8px; }
+  .modal-actions button { flex: 1; }
+
+  /* ── Doc chips en consultas ── */
+  .cons-docs-chips { gap: 6px; }
+  .cons-doc-chip { font-size: 0.75rem; padding: 5px 10px; }
+
+  /* ── Doc viewer ── */
+  #doc-viewer-box { margin: 0; border-radius: 0; }
+
+  /* ── Filtros ── */
+  .section-filters { gap: 8px; }
+  .section-filters select { font-size: 0.85rem; }
 }
 
 @media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .stat-value { font-size: 2rem; }
+  .section { padding: 12px; }
+  .stats-grid { gap: 8px; }
+  #documents-grid { grid-template-columns: 1fr; }
+  .apt-date-day { font-size: 1.5rem; }
+  .list-item-actions { padding-left: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
