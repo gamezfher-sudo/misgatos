@@ -461,69 +461,108 @@ function showCatForm(catId = null) {
   const title = cat ? `Editar: ${cat.name}` : 'Agregar Gato';
   openModal(title, `
     <form id="cat-form" onsubmit="saveCat(event,'${catId || ''}')">
-      <div id="cat-photo-preview" class="${cat?.photo_url ? '' : 'photo-placeholder'}">
-        ${cat?.photo_url ? `<img class="photo-preview" src="${cat.photo_url}" id="cat-img-preview">` : '[sin foto]'}
+
+      <!-- Foto -->
+      <div class="cat-photo-picker" onclick="document.getElementById('cat-photo-file').click()" role="button" tabindex="0" aria-label="Cambiar foto del gato">
+        <div id="cat-photo-preview" class="cat-photo-circle ${cat?.photo_url ? '' : 'cat-photo-empty'}">
+          ${cat?.photo_url
+            ? `<img id="cat-img-preview" src="${cat.photo_url}" alt="${cat.name}">`
+            : `<i aria-hidden="true" class="fa-solid fa-camera"></i>`}
+        </div>
+        <span class="cat-photo-hint">${cat?.photo_url ? 'Cambiar foto' : 'Agregar foto'}</span>
+        <input type="file" id="cat-photo-file" accept="image/*" onchange="previewCatPhoto(this)" style="display:none">
       </div>
-      <div class="field">
-        <label for="cat-photo-file"><i aria-hidden="true" class="fa-solid fa-camera"></i> Foto del gato</label>
-        <input type="file" id="cat-photo-file" accept="image/*" onchange="previewCatPhoto(this)">
-      </div>
+
       <div class="field-row">
-        <div class="field">
-          <label for="f-cat-name">Nombre *</label>
-          <input type="text" id="f-cat-name" name="name" autocomplete="off" value="${cat?.name || ''}" required>
+        <div class="pfield">
+          <label class="pfield-label" for="f-cat-name">Nombre *</label>
+          <div class="pfield-wrap">
+            <i aria-hidden="true" class="fa-solid fa-cat"></i>
+            <input type="text" id="f-cat-name" name="name" autocomplete="off" value="${cat?.name || ''}" placeholder="Ej. Mily" required>
+          </div>
         </div>
-        <div class="field">
-          <label for="f-cat-breed">Raza</label>
-          <input type="text" id="f-cat-breed" name="breed" autocomplete="off" value="${cat?.breed || ''}">
+        <div class="pfield">
+          <label class="pfield-label" for="f-cat-breed">Raza</label>
+          <div class="pfield-wrap">
+            <i aria-hidden="true" class="fa-solid fa-paw"></i>
+            <input type="text" id="f-cat-breed" name="breed" autocomplete="off" value="${cat?.breed || ''}" placeholder="Ej. Siamés">
+          </div>
         </div>
       </div>
+
       <div class="field-row">
-        <div class="field">
-          <label for="f-cat-gender">Genero</label>
-          <select id="f-cat-gender" name="gender">
-            <option value="">-- Seleccionar --</option>
-            <option value="macho" ${cat?.gender==='macho'?'selected':''}>Macho</option>
-            <option value="hembra" ${cat?.gender==='hembra'?'selected':''}>Hembra</option>
-          </select>
+        <div class="pfield">
+          <label class="pfield-label" for="f-cat-gender">Género</label>
+          <div class="pfield-wrap">
+            <i aria-hidden="true" class="fa-solid fa-venus-mars"></i>
+            <select id="f-cat-gender" name="gender">
+              <option value="">-- Seleccionar --</option>
+              <option value="macho"  ${cat?.gender==='macho' ?'selected':''}>Macho</option>
+              <option value="hembra" ${cat?.gender==='hembra'?'selected':''}>Hembra</option>
+            </select>
+          </div>
         </div>
-        <div class="field">
-          <label for="f-cat-birth">Fecha de nacimiento</label>
-          <input type="date" id="f-cat-birth" name="birthdate" value="${cat?.birthdate || ''}">
+        <div class="pfield">
+          <label class="pfield-label" for="f-cat-birth">Fecha de nacimiento</label>
+          <div class="pfield-wrap">
+            <i aria-hidden="true" class="fa-solid fa-calendar-days"></i>
+            <input type="date" id="f-cat-birth" name="birthdate" value="${cat?.birthdate || ''}">
+          </div>
         </div>
       </div>
+
       <div class="field-row">
-        <div class="field">
-          <label for="f-cat-color">Color</label>
-          <input type="text" id="f-cat-color" name="color" autocomplete="off" value="${cat?.color || ''}">
+        <div class="pfield">
+          <label class="pfield-label" for="f-cat-color">Color</label>
+          <div class="pfield-wrap">
+            <i aria-hidden="true" class="fa-solid fa-palette"></i>
+            <input type="text" id="f-cat-color" name="color" autocomplete="off" value="${cat?.color || ''}" placeholder="Ej. Naranja atigrado">
+          </div>
         </div>
-        <div class="field">
-          <label for="f-cat-weight"><i aria-hidden="true" class="fa-solid fa-weight-scale"></i> Peso (kg)</label>
-          <input type="number" id="f-cat-weight" name="weight" step="any" min="0" max="30" inputmode="decimal" autocomplete="off" value="${cat?.weight || ''}">
+        <div class="pfield">
+          <label class="pfield-label" for="f-cat-weight">Peso (kg)</label>
+          <div class="pfield-wrap">
+            <i aria-hidden="true" class="fa-solid fa-weight-scale"></i>
+            <input type="number" id="f-cat-weight" name="weight" step="any" min="0" max="30" inputmode="decimal" autocomplete="off" value="${cat?.weight || ''}" placeholder="3.5">
+          </div>
         </div>
       </div>
+
       <div class="field-row">
-        <div class="field">
-          <label for="f-cat-chip">Microchip</label>
-          <input type="text" id="f-cat-chip" name="microchip" autocomplete="off" value="${cat?.microchip || ''}">
+        <div class="pfield">
+          <label class="pfield-label" for="f-cat-chip">Microchip</label>
+          <div class="pfield-wrap">
+            <i aria-hidden="true" class="fa-solid fa-microchip"></i>
+            <input type="text" id="f-cat-chip" name="microchip" autocomplete="off" value="${cat?.microchip || ''}" placeholder="Número de chip">
+          </div>
         </div>
-        <div class="field">
-          <label for="f-cat-blood">Tipo de sangre</label>
-          <input type="text" id="f-cat-blood" name="blood_type" autocomplete="off" value="${cat?.blood_type || ''}">
+        <div class="pfield">
+          <label class="pfield-label" for="f-cat-blood">Tipo de sangre</label>
+          <div class="pfield-wrap">
+            <i aria-hidden="true" class="fa-solid fa-droplet"></i>
+            <input type="text" id="f-cat-blood" name="blood_type" autocomplete="off" value="${cat?.blood_type || ''}" placeholder="Ej. A, B, AB">
+          </div>
         </div>
       </div>
-      <div class="field">
-        <label for="f-cat-allergies">Alergias</label>
-        <input type="text" id="f-cat-allergies" name="allergies" autocomplete="off" value="${cat?.allergies || ''}" placeholder="Ej: Pollo, antibioticos&hellip;">
+
+      <div class="pfield">
+        <label class="pfield-label" for="f-cat-allergies">Alergias</label>
+        <div class="pfield-wrap">
+          <i aria-hidden="true" class="fa-solid fa-triangle-exclamation"></i>
+          <input type="text" id="f-cat-allergies" name="allergies" autocomplete="off" value="${cat?.allergies || ''}" placeholder="Ej. Pollo, antibióticos…">
+        </div>
       </div>
-      <div class="checkbox-field">
+
+      <div class="cat-sterilized-row">
         <input type="checkbox" name="is_sterilized" id="cb-sterilized" ${cat?.is_sterilized ? 'checked' : ''}>
-        <label for="cb-sterilized">Esta esterilizado/a</label>
+        <label for="cb-sterilized">Está esterilizado/a</label>
       </div>
-      <div class="field">
-        <label for="f-cat-notes">Notas</label>
-        <textarea id="f-cat-notes" name="notes">${cat?.notes || ''}</textarea>
+
+      <div class="pfield">
+        <label class="pfield-label" for="f-cat-notes">Notas</label>
+        <textarea id="f-cat-notes" name="notes" class="pfield-textarea" placeholder="Observaciones, comportamiento, condiciones especiales…">${cat?.notes || ''}</textarea>
       </div>
+
       <div class="modal-actions">
         <button type="button" class="btn-secondary" onclick="closeModalDirect()"><i aria-hidden="true" class="fa-solid fa-xmark"></i> Cancelar</button>
         <button type="submit" class="btn-primary"><i aria-hidden="true" class="fa-solid fa-floppy-disk"></i> Guardar</button>

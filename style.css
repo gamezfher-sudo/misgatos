@@ -1515,14 +1515,14 @@ h1, h2, h3, h4 {
 
 /* ── Perfil ── */
 .profile-tabs {
-  display: inline-flex; gap: 4px;
+  display: flex; gap: 4px;
   background: var(--primary-pale-solid);
   border-radius: 999px;
   padding: 4px;
   margin-bottom: 24px;
 }
 .profile-tab {
-  padding: 8px 20px;
+  flex: 1; padding: 8px 20px;
   background: none; border: none; cursor: pointer;
   font-size: 0.875rem; font-weight: 600;
   color: var(--text-muted); font-family: 'Inter', sans-serif;
@@ -1584,6 +1584,74 @@ h1, h2, h3, h4 {
   width: 100%; justify-content: center;
   padding: 13px; font-size: 0.95rem;
   border-radius: 12px; margin-top: 6px;
+}
+
+/* ── Cat Photo Picker ── */
+.cat-photo-picker {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; cursor: pointer; margin-bottom: 24px;
+}
+.cat-photo-circle {
+  width: 88px; height: 88px;
+  border-radius: 50%; overflow: hidden;
+  border: 2.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.15s;
+}
+.cat-photo-picker:hover .cat-photo-circle { border-color: var(--primary); }
+.cat-photo-circle img { width: 100%; height: 100%; object-fit: cover; }
+.cat-photo-empty {
+  background: var(--primary-pale-solid);
+  border-color: var(--primary-pale-solid);
+}
+.cat-photo-empty i { font-size: 1.5rem; color: var(--primary); opacity: 0.7; }
+.cat-photo-hint { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+
+/* ── Select & Textarea inside pfield-wrap ── */
+.pfield-wrap select {
+  width: 100%; padding: 13px 14px 13px 40px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--card-bg); color: var(--text);
+  font-size: 0.95rem; font-family: 'Inter', sans-serif;
+  appearance: none; cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.pfield-wrap select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0,105,77,0.1);
+  outline: none;
+}
+.pfield-textarea {
+  width: 100%; padding: 13px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--card-bg); color: var(--text);
+  font-size: 0.95rem; font-family: 'Inter', sans-serif;
+  resize: vertical; min-height: 80px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+.pfield-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0,105,77,0.1);
+  outline: none;
+}
+
+/* ── Sterilized checkbox row ── */
+.cat-sterilized-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  background: var(--bg); border-radius: 12px;
+  border: 1.5px solid var(--border);
+  cursor: pointer; margin-bottom: 18px;
+}
+.cat-sterilized-row input[type="checkbox"] {
+  width: 18px; height: 18px; accent-color: var(--primary);
+  cursor: pointer; flex-shrink: 0;
+}
+.cat-sterilized-row span {
+  font-size: 0.95rem; font-weight: 500; color: var(--text);
 }
 
 /* ============================================================
