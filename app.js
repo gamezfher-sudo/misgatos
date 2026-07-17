@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'c';
+const BUILD         = 'd';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -125,9 +125,23 @@ function navigate(section) {
     el.classList.toggle('active', el.dataset.nav === section);
   });
 
-  // FAB solo en Mis Gatos
-  const fab = document.getElementById('fab-add-cat');
-  if (fab) fab.classList.toggle('hidden', section !== 'cats');
+  // FAB: en desktop solo cats; en mobile uno por sección
+  const isMobile = window.innerWidth <= 768;
+  const fabMap = {
+    cats:          'fab-add-cat',
+    vets:          'fab-add-vet',
+    appointments:  'fab-add-appointment',
+    consultations: 'fab-add-consultation',
+    vaccines:      'fab-add-vaccine',
+    dewormings:    'fab-add-deworming',
+    documents:     'fab-add-document',
+  };
+  Object.entries(fabMap).forEach(([sec, id]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const show = sec === section && (sec === 'cats' || isMobile);
+    el.classList.toggle('hidden', !show);
+  });
 
   // Renderizar sección correspondiente
   const renders = {

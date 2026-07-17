@@ -1095,6 +1095,11 @@ h1, h2, h3, h4 {
   from { transform: translateY(80px) scale(0.6); opacity: 0; }
   to   { transform: translateY(0) scale(1); opacity: 1; }
 }
+/* FABs extra solo visibles en mobile */
+@media (min-width: 769px) {
+  #fab-add-vet, #fab-add-appointment, #fab-add-consultation,
+  #fab-add-vaccine, #fab-add-deworming, #fab-add-document { display: none !important; }
+}
 .fab:hover { transform: scale(1.08); box-shadow: 0 8px 28px rgba(0,105,77,0.4); }
 .fab:active { transform: scale(0.96); }
 .fab:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
@@ -1331,9 +1336,10 @@ h1, h2, h3, h4 {
   .dashboard-welcome { flex-direction: column; align-items: flex-start; }
   .dashboard-welcome h1 { font-size: 1.4rem; }
 
-  /* ── Section header ── */
-  .section-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  /* ── Section header: ocultar btn en mobile (reemplazado por FAB) ── */
+  .section-header { flex-direction: row; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 16px; }
   .section-header h2 { font-size: 1.3rem; }
+  .section-header > .btn-primary { display: none; }
 
   /* ── List items (consultas / vacunas / desparasitaciones) ── */
   .list-item {
