@@ -97,6 +97,7 @@ function switchProfileTab(tab) {
   document.querySelectorAll('.profile-tab-pane').forEach(pane => {
     pane.classList.toggle('hidden', pane.id !== `profile-tab-${tab}`);
   });
+  if (tab === 'acceso') renderLinkedAccounts();
 }
 
 async function renderProfile() {
@@ -112,8 +113,6 @@ async function renderProfile() {
   if (nameEl)  nameEl.value  = meta.first_name || '';
   if (lastEl)  lastEl.value  = meta.last_name  || '';
   if (phoneEl) phoneEl.value = meta.phone       || '';
-
-  await renderLinkedAccounts();
 }
 
 async function renderLinkedAccounts() {

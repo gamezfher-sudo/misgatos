@@ -329,8 +329,9 @@
 
       <!-- Pestañas -->
       <div class="profile-tabs" role="tablist">
-        <button class="profile-tab active" role="tab" aria-selected="true" aria-controls="profile-tab-datos" onclick="switchProfileTab('datos')">Datos personales</button>
+        <button class="profile-tab active" role="tab" aria-selected="true" aria-controls="profile-tab-datos" onclick="switchProfileTab('datos')">Datos</button>
         <button class="profile-tab" role="tab" aria-selected="false" aria-controls="profile-tab-seguridad" onclick="switchProfileTab('seguridad')">Seguridad</button>
+        <button class="profile-tab" role="tab" aria-selected="false" aria-controls="profile-tab-acceso" onclick="switchProfileTab('acceso')">Acceso</button>
       </div>
 
       <!-- Pestaña: Datos personales -->
@@ -371,45 +372,6 @@
           </form>
         </div>
 
-        <!-- Cuentas vinculadas -->
-        <div class="profile-card" style="margin-top:16px">
-          <div class="profile-card-title">
-            <i class="fa-solid fa-user-group" aria-hidden="true"></i> Cuentas vinculadas
-          </div>
-          <p style="font-size:0.85rem;color:var(--text-muted);margin:0 0 16px">
-            Las cuentas vinculadas pueden ver y editar los mismos gatos, citas e historial. Los recordatorios por correo se envían a todos.
-          </p>
-          <div id="linked-accounts-list" style="margin-bottom:16px"></div>
-          <form onsubmit="createLinkedUser(event)">
-            <div class="pfield" style="margin-bottom:10px">
-              <div class="pfield-wrap">
-                <i class="fa-solid fa-user" aria-hidden="true"></i>
-                <input type="text" id="link-name-input" autocomplete="given-name" placeholder="Nombre (opcional)">
-              </div>
-            </div>
-            <div class="pfield" style="margin-bottom:10px">
-              <div class="pfield-wrap">
-                <i class="fa-solid fa-at" aria-hidden="true"></i>
-                <input type="email" id="link-email-input" autocomplete="off" spellcheck="false" placeholder="correo@ejemplo.com" required>
-              </div>
-            </div>
-            <div class="pfield" style="margin-bottom:10px">
-              <div class="pfield-wrap">
-                <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
-                <input type="tel" id="link-phone-input" autocomplete="off" placeholder="Celular (opcional)">
-              </div>
-            </div>
-            <div class="pfield" style="margin-bottom:10px">
-              <div class="pfield-wrap">
-                <i class="fa-solid fa-lock" aria-hidden="true"></i>
-                <input type="password" id="link-pass-input" autocomplete="new-password" placeholder="Contraseña" minlength="6" required>
-              </div>
-            </div>
-            <button type="submit" class="btn-primary pfield-btn">
-              <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Crear y vincular cuenta
-            </button>
-          </form>
-        </div>
       </div>
 
       <!-- Pestaña: Seguridad -->
@@ -432,6 +394,49 @@
             </div>
             <button type="submit" class="btn-primary pfield-btn">
               <i class="fa-solid fa-key" aria-hidden="true"></i> Cambiar contraseña
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Pestaña: Acceso compartido -->
+      <div class="profile-tab-pane hidden" id="profile-tab-acceso" role="tabpanel">
+        <div class="profile-card">
+          <p style="font-size:0.85rem;color:var(--text-muted);margin:0 0 20px">
+            Las cuentas vinculadas ven y editan los mismos gatos, citas e historial. Los recordatorios por correo llegan a todos.
+          </p>
+          <div id="linked-accounts-list" style="margin-bottom:20px"></div>
+          <form onsubmit="createLinkedUser(event)">
+            <div class="pfield">
+              <label class="pfield-label" for="link-name-input">Nombre</label>
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+                <input type="text" id="link-name-input" autocomplete="given-name" placeholder="Ej. Karen">
+              </div>
+            </div>
+            <div class="pfield">
+              <label class="pfield-label" for="link-email-input">Correo</label>
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-at" aria-hidden="true"></i>
+                <input type="email" id="link-email-input" autocomplete="off" spellcheck="false" placeholder="correo@ejemplo.com" required>
+              </div>
+            </div>
+            <div class="pfield">
+              <label class="pfield-label" for="link-phone-input">Celular</label>
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
+                <input type="tel" id="link-phone-input" autocomplete="off" placeholder="+52 55 0000 0000">
+              </div>
+            </div>
+            <div class="pfield">
+              <label class="pfield-label" for="link-pass-input">Contraseña</label>
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                <input type="password" id="link-pass-input" autocomplete="new-password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+              </div>
+            </div>
+            <button type="submit" class="btn-primary pfield-btn">
+              <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Crear y vincular cuenta
             </button>
           </form>
         </div>
