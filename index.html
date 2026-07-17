@@ -370,6 +370,28 @@
             </button>
           </form>
         </div>
+
+        <!-- Cuentas vinculadas -->
+        <div class="profile-card" style="margin-top:16px">
+          <div class="profile-card-title">
+            <i class="fa-solid fa-user-group" aria-hidden="true"></i> Cuentas vinculadas
+          </div>
+          <p style="font-size:0.85rem;color:var(--text-muted);margin:0 0 16px">
+            Las cuentas vinculadas pueden ver y editar los mismos gatos, citas e historial. Los recordatorios por correo se envían a todos.
+          </p>
+          <div id="linked-accounts-list" style="margin-bottom:16px"></div>
+          <form onsubmit="linkAccount(event)">
+            <div class="pfield" style="margin-bottom:10px">
+              <div class="pfield-wrap">
+                <i class="fa-solid fa-at" aria-hidden="true"></i>
+                <input type="email" id="link-email-input" autocomplete="off" spellcheck="false" placeholder="correo@ejemplo.com" required>
+              </div>
+            </div>
+            <button type="submit" class="btn-primary pfield-btn">
+              <i class="fa-solid fa-link" aria-hidden="true"></i> Vincular cuenta
+            </button>
+          </form>
+        </div>
       </div>
 
       <!-- Pestaña: Seguridad -->

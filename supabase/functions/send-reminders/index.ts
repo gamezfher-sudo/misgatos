@@ -40,9 +40,8 @@ Deno.serve(async () => {
           .eq('appointment_id', apt.id).eq('days_before', days).maybeSingle()
         if (logged) continue
 
-        const { data: userData, error: userErr } = await sb.auth.admin.getUserById(userId)
-        const toEmail = userData?.user?.email
-        if (userErr || !toEmail) continue
+        const toEmails = await getEmailsForUser(sb, userId)
+        if (!toEmails.length) continue
 
         const whenLabel = daysLabel(days)
         const subject   = `Recordatorio: ${cat?.name || 'Tu gato'} tiene cita ${whenLabel}`
@@ -56,11 +55,12 @@ Deno.serve(async () => {
           whenLabel, days,
         })
 
-        const ok = await sendEmail(toEmail, subject, html)
+        let ok = false
+        for (const email of toEmails) { if (await sendEmail(email, subject, html)) ok = true }
         if (ok) {
-          await sb.from('reminder_log').insert({ appointment_id: apt.id, days_before: days, sent_to: toEmail })
+          await sb.from('reminder_log').insert({ appointment_id: apt.id, days_before: days, sent_to: toEmails.join(',') })
           sent++
-          console.log(`[apt] ${days}d → ${toEmail} (${cat?.name})`)
+          console.log(`[apt] ${days}d → ${toEmails.join(',')} (${cat?.name})`)
         } else { errors++ }
       }
     }
@@ -83,9 +83,8 @@ Deno.serve(async () => {
           .eq('vaccine_id', vac.id).eq('days_before', days).maybeSingle()
         if (logged) continue
 
-        const { data: userData, error: userErr } = await sb.auth.admin.getUserById(userId)
-        const toEmail = userData?.user?.email
-        if (userErr || !toEmail) continue
+        const toEmails = await getEmailsForUser(sb, userId)
+        if (!toEmails.length) continue
 
         const whenLabel = daysLabel(days)
         const catName   = cat?.name || 'Tu gato'
@@ -98,11 +97,12 @@ Deno.serve(async () => {
           dueDate: formatDate(vac.next_due_date), whenLabel, days,
         })
 
-        const ok = await sendEmail(toEmail, subject, html)
+        let ok = false
+        for (const email of toEmails) { if (await sendEmail(email, subject, html)) ok = true }
         if (ok) {
-          await sb.from('reminder_log').insert({ vaccine_id: vac.id, days_before: days, sent_to: toEmail })
+          await sb.from('reminder_log').insert({ vaccine_id: vac.id, days_before: days, sent_to: toEmails.join(',') })
           sent++
-          console.log(`[vac] ${days}d → ${toEmail} (${catName}: ${vac.vaccine_name})`)
+          console.log(`[vac] ${days}d → ${toEmails.join(',')} (${catName}: ${vac.vaccine_name})`)
         } else { errors++ }
       }
     }
@@ -125,9 +125,8 @@ Deno.serve(async () => {
           .eq('deworming_id', dew.id).eq('days_before', days).maybeSingle()
         if (logged) continue
 
-        const { data: userData, error: userErr } = await sb.auth.admin.getUserById(userId)
-        const toEmail = userData?.user?.email
-        if (userErr || !toEmail) continue
+        const toEmails = await getEmailsForUser(sb, userId)
+        if (!toEmails.length) continue
 
         const whenLabel = daysLabel(days)
         const catName   = cat?.name || 'Tu gato'
@@ -140,11 +139,12 @@ Deno.serve(async () => {
           dueDate: formatDate(dew.next_due_date), whenLabel, days,
         })
 
-        const ok = await sendEmail(toEmail, subject, html)
+        let ok = false
+        for (const email of toEmails) { if (await sendEmail(email, subject, html)) ok = true }
         if (ok) {
-          await sb.from('reminder_log').insert({ deworming_id: dew.id, days_before: days, sent_to: toEmail })
+          await sb.from('reminder_log').insert({ deworming_id: dew.id, days_before: days, sent_to: toEmails.join(',') })
           sent++
-          console.log(`[dew] ${days}d → ${toEmail} (${catName}: ${dew.product_name})`)
+          console.log(`[dew] ${days}d → ${toEmails.join(',')} (${catName}: ${dew.product_name})`)
         } else { errors++ }
       }
     }
@@ -156,6 +156,24 @@ Deno.serve(async () => {
 })
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Devuelve el email del dueño + emails de todas las cuentas vinculadas
+async function getEmailsForUser(sb: any, userId: string): Promise<string[]> {
+  const emails: string[] = []
+  const { data: owner } = await sb.auth.admin.getUserById(userId)
+  if (owner?.user?.email) emails.push(owner.user.email)
+
+  const { data: links } = await sb
+    .from('account_links')
+    .select('linked_id')
+    .eq('owner_id', userId)
+
+  for (const link of links ?? []) {
+    const { data: linked } = await sb.auth.admin.getUserById(link.linked_id)
+    if (linked?.user?.email) emails.push(linked.user.email)
+  }
+  return emails
+}
 
 function daysLabel(days: number): string {
   return days === 0 ? 'hoy' : days === 1 ? 'mañana' : `en ${days} días`

@@ -112,6 +112,55 @@ async function renderProfile() {
   if (nameEl)  nameEl.value  = meta.first_name || '';
   if (lastEl)  lastEl.value  = meta.last_name  || '';
   if (phoneEl) phoneEl.value = meta.phone       || '';
+
+  await renderLinkedAccounts();
+}
+
+async function renderLinkedAccounts() {
+  const el = document.getElementById('linked-accounts-list');
+  if (!el) return;
+  el.innerHTML = '<div class="empty-state" style="padding:8px 0">Cargando&hellip;</div>';
+  const { data, error } = await sb.rpc('get_linked_accounts');
+  if (error || !data?.length) {
+    el.innerHTML = '<div class="linked-empty">Sin cuentas vinculadas.</div>';
+    return;
+  }
+  el.innerHTML = data.map(row => `
+    <div class="linked-account-row">
+      <i class="fa-solid fa-user-check linked-account-icon" aria-hidden="true"></i>
+      <span class="linked-account-email">${row.email}</span>
+      <button class="linked-account-remove" onclick="unlinkAccount('${row.linked_id}')" aria-label="Desvincular ${row.email}">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+  `).join('');
+}
+
+async function linkAccount(e) {
+  e.preventDefault();
+  const input = document.getElementById('link-email-input');
+  const email = input?.value?.trim();
+  if (!email) return;
+  const btn = e.target.querySelector('button[type="submit"]');
+  if (btn) btn.disabled = true;
+  const { data, error } = await sb.rpc('link_account', { p_email: email });
+  if (btn) btn.disabled = false;
+  if (error) { showToast('Error al vincular cuenta', 'error'); return; }
+  const msgs = {
+    ok:             'Cuenta vinculada correctamente',
+    not_found:      'No existe una cuenta con ese correo',
+    self:           'No puedes vincularte a ti mismo',
+    already_linked: 'Esa cuenta ya está vinculada',
+  };
+  showToast(msgs[data] || 'Error desconocido', data === 'ok' ? 'success' : 'error');
+  if (data === 'ok') { if (input) input.value = ''; await renderLinkedAccounts(); }
+}
+
+async function unlinkAccount(linkedId) {
+  const { error } = await sb.rpc('unlink_account', { p_linked_id: linkedId });
+  if (error) { showToast('Error al desvincular', 'error'); return; }
+  showToast('Cuenta desvinculada', 'success');
+  await renderLinkedAccounts();
 }
 
 async function saveProfile(e) {
@@ -236,8 +285,8 @@ async function loadAllData() {
   const uid = state.user.id;
 
   const [cats, vets, apts, cons, vacs, dews, docs] = await Promise.all([
-    sb.from('cats').select('*').eq('user_id', uid).order('name'),
-    sb.from('veterinarians').select('*').eq('user_id', uid).order('name'),
+    sb.from('cats').select('*').order('name'),
+    sb.from('veterinarians').select('*').order('name'),
     sb.from('appointments').select('*, cats(name, photo_url), veterinarians(name, clinic_name, address, phone, email)').order('appointment_date'),
     sb.from('consultations').select('*, cats(name, photo_url), veterinarians(name, clinic_name)').order('visit_date', { ascending: false }),
     sb.from('vaccines').select('*, cats(name, photo_url), veterinarians(name)').order('date_applied', { ascending: false }),
