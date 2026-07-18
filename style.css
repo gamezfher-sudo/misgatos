@@ -915,7 +915,7 @@ h1, h2, h3, h4 {
 
 /* ── Document Card ── */
 /* ── Doc Rows ── */
-#documents-grid { display: flex; flex-direction: column; gap: 8px; }
+#documents-grid { display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
 
 .doc-row {
   background: var(--card-bg);
@@ -1738,12 +1738,11 @@ h1, h2, h3, h4 {
   .vet-card-actions { flex-wrap: wrap; }
 
   /* ── Documentos ── */
-  .doc-row { padding: 12px 14px; gap: 8px; }
+  .doc-row { padding: 10px 12px; gap: 7px; }
   .doc-row-title { font-size: 0.85rem; }
-  .doc-row .cat-avatar-sm { display: none; }
-  .doc-ver-btn { padding: 6px 10px; font-size: 0; }
-  .doc-ver-btn i { font-size: 0.9rem; }
-  .doc-ver-btn::after { content: ''; }
+  .doc-ver-btn { padding: 5px 10px; font-size: 0.78rem; }
+  .doc-row .cat-avatar-sm { width: 32px; height: 32px; }
+  .doc-row-icon { width: 28px; height: 28px; font-size: 0.8rem; }
 
   /* ── Modal ── */
   #modal-overlay { align-items: flex-end; }
