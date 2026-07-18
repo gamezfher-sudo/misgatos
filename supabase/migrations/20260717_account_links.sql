@@ -21,14 +21,18 @@ CREATE POLICY "account_links_owner" ON public.account_links
 
 -- ── Helper: devuelve todos los user_ids a los que el usuario actual tiene acceso ──
 -- Incluye el propio uid + los owner_ids de quienes lo han vinculado.
+-- SECURITY DEFINER es necesario: la función consulta account_links buscando
+-- filas donde linked_id = auth.uid(), pero el RLS de esa tabla solo permite
+-- ver filas donde owner_id = auth.uid(). Sin definer, la función no ve los
+-- vínculos entrantes y la cuenta vinculada no puede ver los datos del dueño.
 CREATE OR REPLACE FUNCTION public.accessible_owner_ids()
 RETURNS uuid[]
-LANGUAGE sql SECURITY INVOKER STABLE
+LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public
 AS $$
   SELECT ARRAY(
-    SELECT (SELECT auth.uid())
+    SELECT auth.uid()
     UNION
-    SELECT owner_id FROM public.account_links WHERE linked_id = (SELECT auth.uid())
+    SELECT owner_id FROM public.account_links WHERE linked_id = auth.uid()
   )
 $$;
 
