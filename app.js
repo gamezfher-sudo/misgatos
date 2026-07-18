@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'w';
+const BUILD         = 'x';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -1268,10 +1268,8 @@ function addConsDocRow() {
         <option value="rayos_x">Rayos X</option>
       </select>
       <input type="text" id="cons-doc-title-${idx}" class="cons-doc-title-inp" placeholder="Titulo (opcional)">
-      <div class="file-scan-row">
-        <input type="file" id="cons-doc-file-${idx}" accept="image/*,.pdf">
-        <button type="button" class="btn-scan" onclick="openScanner('cons-doc-file-${idx}')"><i class="fa-solid fa-scan" aria-hidden="true"></i></button>
-      </div>
+      <input type="file" id="cons-doc-file-${idx}" accept="image/*,.pdf">
+      <button type="button" class="btn-scan btn-scan-full" onclick="openScanner('cons-doc-file-${idx}')"><i class="fa-solid fa-scan" aria-hidden="true"></i> Escanear</button>
     </div>
     <button type="button" class="btn-unlink" onclick="document.getElementById('cons-doc-row-${idx}').remove()" aria-label="Quitar fila">
       <i aria-hidden="true" class="fa-solid fa-xmark"></i>
