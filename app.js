@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'x';
+const BUILD         = 'y';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -1975,7 +1975,6 @@ function showDocumentForm(docId = null) {
         <button type="submit" class="btn-primary"><i aria-hidden="true" class="fa-solid fa-cloud-arrow-up"></i> Subir</button>
       </div>
     </form>
-    <div id="doc-modal-recent">${_renderDocModalList()}</div>
   `);
 }
 
