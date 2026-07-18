@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/perspective-transform@1.1.3/dist/perspective-transform.js"></script>
 </head>
 <body>
 
@@ -517,5 +518,43 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
+<!-- Scanner modal -->
+<div id="scanner-overlay" class="scanner-overlay hidden" role="dialog" aria-modal="true" aria-label="Escáner de documentos">
+  <div class="scanner-container">
+    <div class="scanner-header">
+      <span class="scanner-hint">Arrastra las esquinas al borde del documento</span>
+      <button class="scanner-close" onclick="closeScanner()" aria-label="Cerrar escáner">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="scanner-canvas-wrap" id="scanner-canvas-wrap">
+      <canvas id="scanner-canvas"></canvas>
+      <svg id="scanner-svg" class="scanner-svg">
+        <polygon id="scanner-poly" class="scanner-poly"/>
+        <circle id="scanner-h0" class="scanner-handle" r="18" data-idx="0"/>
+        <circle id="scanner-h1" class="scanner-handle" r="18" data-idx="1"/>
+        <circle id="scanner-h2" class="scanner-handle" r="18" data-idx="2"/>
+        <circle id="scanner-h3" class="scanner-handle" r="18" data-idx="3"/>
+      </svg>
+    </div>
+    <div class="scanner-footer">
+      <div class="scanner-options">
+        <label class="scanner-opt">
+          <input type="checkbox" id="scanner-bw"> Blanco y negro
+        </label>
+        <label class="scanner-opt">
+          <input type="checkbox" id="scanner-enhance" checked> Mejorar contraste
+        </label>
+      </div>
+      <div class="scanner-btns">
+        <button class="btn-secondary" onclick="closeScanner()">Cancelar</button>
+        <button class="btn-primary" onclick="applyScanner()">
+          <i class="fa-solid fa-crop-simple" aria-hidden="true"></i> Aplicar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<input type="file" id="scanner-camera-input" accept="image/*" capture="environment" style="display:none" onchange="scannerLoadImage(this)">
 </body>
 </html>

@@ -1589,6 +1589,80 @@ h1, h2, h3, h4 {
   border-radius: 12px; margin-top: 6px;
 }
 
+/* ── Scanner de documentos ── */
+.scanner-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.92);
+  display: flex; align-items: center; justify-content: center;
+}
+.scanner-overlay.hidden { display: none; }
+.scanner-container {
+  width: 100%; max-width: 520px;
+  display: flex; flex-direction: column;
+  background: #111; border-radius: 16px;
+  overflow: hidden; margin: 12px;
+}
+.scanner-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.scanner-hint { font-size: 0.82rem; color: rgba(255,255,255,0.7); font-weight: 500; }
+.scanner-close {
+  background: none; border: none; color: rgba(255,255,255,0.6);
+  font-size: 1.1rem; cursor: pointer; padding: 4px 8px; border-radius: 6px;
+  transition: color 0.15s;
+}
+.scanner-close:hover { color: #fff; }
+.scanner-canvas-wrap {
+  position: relative; width: 100%; overflow: hidden;
+  background: #000; display: flex; align-items: center; justify-content: center;
+}
+.scanner-canvas-wrap canvas { display: block; }
+.scanner-svg {
+  position: absolute; top: 0; left: 0; pointer-events: all;
+}
+.scanner-poly {
+  fill: rgba(0, 105, 77, 0.18);
+  stroke: #00e89a;
+  stroke-width: 2;
+}
+.scanner-handle {
+  fill: #00e89a; stroke: #fff; stroke-width: 2;
+  cursor: grab; touch-action: none;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+.scanner-handle:active { cursor: grabbing; }
+.scanner-footer {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.scanner-options { display: flex; gap: 16px; }
+.scanner-opt {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.82rem; color: rgba(255,255,255,0.7); cursor: pointer;
+}
+.scanner-opt input { accent-color: #00e89a; }
+.scanner-btns { display: flex; gap: 10px; }
+.scanner-btns .btn-secondary {
+  flex: 1; background: rgba(255,255,255,0.08); color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.scanner-btns .btn-primary { flex: 1; }
+
+/* Botón escanear junto a input file */
+.file-scan-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.file-scan-row input[type="file"] { flex: 1; min-width: 0; }
+.btn-scan {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+  background: var(--primary-pale-solid); color: var(--primary);
+  border: 1.5px solid var(--primary); cursor: pointer; white-space: nowrap;
+  transition: background 0.15s;
+}
+.btn-scan:hover { background: var(--primary); color: #fff; }
+
 /* ── Cuentas vinculadas ── */
 .linked-account-row {
   display: flex; align-items: center; gap: 10px;

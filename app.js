@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'u';
+const BUILD         = 'v';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -1268,7 +1268,10 @@ function addConsDocRow() {
         <option value="rayos_x">Rayos X</option>
       </select>
       <input type="text" id="cons-doc-title-${idx}" class="cons-doc-title-inp" placeholder="Titulo (opcional)">
-      <input type="file" id="cons-doc-file-${idx}" accept="image/*,.pdf">
+      <div class="file-scan-row">
+        <input type="file" id="cons-doc-file-${idx}" accept="image/*,.pdf">
+        <button type="button" class="btn-scan" onclick="openScanner('cons-doc-file-${idx}')"><i class="fa-solid fa-scan" aria-hidden="true"></i></button>
+      </div>
     </div>
     <button type="button" class="btn-unlink" onclick="document.getElementById('cons-doc-row-${idx}').remove()" aria-label="Quitar fila">
       <i aria-hidden="true" class="fa-solid fa-xmark"></i>
@@ -1925,7 +1928,10 @@ function showDocumentForm(docId = null) {
         <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-days"></i> Fecha</label><input type="date" name="date_issued" value="${d?.date_issued||todayStr()}"></div>
         <div class="field">
           <label><i aria-hidden="true" class="fa-solid fa-paperclip"></i> Archivo (imagen o PDF)</label>
-          <input type="file" id="doc-file" accept="image/*,.pdf">
+          <div class="file-scan-row">
+            <input type="file" id="doc-file" accept="image/*,.pdf">
+            <button type="button" class="btn-scan" onclick="openScanner('doc-file')"><i class="fa-solid fa-scan" aria-hidden="true"></i> Escanear</button>
+          </div>
           ${d?.file_url ? `<p style="font-size:.8rem;color:var(--secondary);margin-top:4px">Ya tiene archivo — sube uno nuevo para reemplazarlo</p>` : ''}
         </div>
         <div class="field"><label>Notas</label><textarea name="notes">${d?.notes||''}</textarea></div>
@@ -1959,7 +1965,10 @@ function showDocumentForm(docId = null) {
         <div class="field"><label><i aria-hidden="true" class="fa-solid fa-calendar-days"></i> Fecha</label><input type="date" name="date_issued" value="${todayStr()}"></div>
         <div class="field">
           <label><i aria-hidden="true" class="fa-solid fa-paperclip"></i> Archivo *</label>
-          <input type="file" id="doc-file" accept="image/*,.pdf" required>
+          <div class="file-scan-row">
+            <input type="file" id="doc-file" accept="image/*,.pdf" required>
+            <button type="button" class="btn-scan" onclick="openScanner('doc-file')"><i class="fa-solid fa-scan" aria-hidden="true"></i> Escanear</button>
+          </div>
         </div>
       </div>
       <div class="field"><label>Notas</label><textarea name="notes" rows="2"></textarea></div>
@@ -2299,4 +2308,245 @@ function calcAge(birthdate) {
   if (years > 0 && months > 0) return `${years} año${years > 1 ? 's' : ''} ${months} mes${months !== 1 ? 'es' : ''}`;
   if (years > 0) return `${years} año${years > 1 ? 's' : ''}`;
   return `${months} mes${months !== 1 ? 'es' : ''}`;
+}
+
+// ── Scanner de documentos ─────────────────────────────────────────────────────
+
+let _scannerTargetId = null;  // id del input file destino
+let _scannerImg = null;       // HTMLImageElement cargado
+let _scannerCorners = [];     // [{x,y}, ...] en coordenadas del canvas display
+let _scannerDragIdx = -1;
+let _scannerScale = 1;        // ratio imagen original / canvas display
+
+function openScanner(targetInputId) {
+  _scannerTargetId = targetInputId;
+  document.getElementById('scanner-camera-input').value = '';
+  document.getElementById('scanner-camera-input').click();
+}
+
+function scannerLoadImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const overlay = document.getElementById('scanner-overlay');
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      _scannerImg = img;
+      _scannerRender();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function _scannerRender() {
+  const wrap   = document.getElementById('scanner-canvas-wrap');
+  const canvas = document.getElementById('scanner-canvas');
+  const svg    = document.getElementById('scanner-svg');
+
+  const img = _scannerImg;
+  const maxW = wrap.clientWidth;
+  const maxH = window.innerHeight * 0.62;
+  const ratio = Math.min(maxW / img.width, maxH / img.height);
+  const w = Math.floor(img.width  * ratio);
+  const h = Math.floor(img.height * ratio);
+
+  canvas.width  = w;
+  canvas.height = h;
+  _scannerScale = ratio;
+
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, w, h);
+
+  svg.setAttribute('width',  w);
+  svg.setAttribute('height', h);
+  svg.style.width  = w + 'px';
+  svg.style.height = h + 'px';
+
+  // Inicializar esquinas con padding del 10%
+  if (!_scannerCorners.length) {
+    const px = w * 0.1, py = h * 0.1;
+    _scannerCorners = [
+      { x: px,     y: py },
+      { x: w - px, y: py },
+      { x: w - px, y: h - py },
+      { x: px,     y: h - py },
+    ];
+  }
+
+  _scannerUpdateSVG();
+}
+
+function _scannerUpdateSVG() {
+  const c = _scannerCorners;
+  document.getElementById('scanner-poly').setAttribute('points',
+    c.map(p => `${p.x},${p.y}`).join(' '));
+  c.forEach((p, i) => {
+    const h = document.getElementById(`scanner-h${i}`);
+    h.setAttribute('cx', p.x);
+    h.setAttribute('cy', p.y);
+  });
+}
+
+// Drag handlers
+document.addEventListener('DOMContentLoaded', () => {
+  const svg = document.getElementById('scanner-svg');
+  if (!svg) return;
+
+  const getPos = (e, el) => {
+    const r = el.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - r.left, y: src.clientY - r.top };
+  };
+
+  const startDrag = (e) => {
+    const idx = parseInt(e.target.getAttribute('data-idx'));
+    if (isNaN(idx)) return;
+    _scannerDragIdx = idx;
+    e.preventDefault();
+  };
+
+  const moveDrag = (e) => {
+    if (_scannerDragIdx < 0) return;
+    e.preventDefault();
+    const canvas = document.getElementById('scanner-canvas');
+    const pos = getPos(e, canvas);
+    const w = canvas.width, h = canvas.height;
+    _scannerCorners[_scannerDragIdx] = {
+      x: Math.max(0, Math.min(w, pos.x)),
+      y: Math.max(0, Math.min(h, pos.y)),
+    };
+    _scannerUpdateSVG();
+  };
+
+  const endDrag = () => { _scannerDragIdx = -1; };
+
+  svg.addEventListener('mousedown',  startDrag);
+  svg.addEventListener('touchstart', startDrag, { passive: false });
+  document.addEventListener('mousemove',  moveDrag);
+  document.addEventListener('touchmove',  moveDrag, { passive: false });
+  document.addEventListener('mouseup',   endDrag);
+  document.addEventListener('touchend',  endDrag);
+});
+
+function applyScanner() {
+  const img = _scannerImg;
+  const c   = _scannerCorners;
+  const s   = 1 / _scannerScale;
+
+  // Puntos en coordenadas de imagen original
+  const src = c.map(p => [p.x * s, p.y * s]).flat();
+
+  // Calcular ancho y alto del output (bounding box de la selección)
+  const w = Math.round(Math.max(
+    Math.hypot(c[1].x - c[0].x, c[1].y - c[0].y),
+    Math.hypot(c[2].x - c[3].x, c[2].y - c[3].y)
+  ) / _scannerScale);
+  const h = Math.round(Math.max(
+    Math.hypot(c[3].x - c[0].x, c[3].y - c[0].y),
+    Math.hypot(c[2].x - c[1].x, c[2].y - c[1].y)
+  ) / _scannerScale);
+
+  const dst = [0, 0, w, 0, w, h, 0, h];
+
+  // Transformación de perspectiva (librería PerspT)
+  const transform = PerspT(src, dst);
+
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width  = w;
+  outCanvas.height = h;
+  const ctx = outCanvas.getContext('2d');
+
+  // Dibujar pixel a pixel con transformación inversa
+  const imgData = ctx.createImageData(w, h);
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width  = img.width;
+  tmpCanvas.height = img.height;
+  const tmpCtx = tmpCanvas.getContext('2d');
+  tmpCtx.drawImage(img, 0, 0);
+  const srcData = tmpCtx.getImageData(0, 0, img.width, img.height);
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const [sx, sy] = transform.transformInverse(x, y);
+      const sx0 = Math.round(sx), sy0 = Math.round(sy);
+      if (sx0 < 0 || sy0 < 0 || sx0 >= img.width || sy0 >= img.height) continue;
+      const si = (sy0 * img.width + sx0) * 4;
+      const di = (y   * w       + x   ) * 4;
+      imgData.data[di]     = srcData.data[si];
+      imgData.data[di + 1] = srcData.data[si + 1];
+      imgData.data[di + 2] = srcData.data[si + 2];
+      imgData.data[di + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+
+  // Mejorar contraste (opcional)
+  if (document.getElementById('scanner-enhance')?.checked) {
+    _scannerEnhance(ctx, w, h);
+  }
+
+  // Blanco y negro (opcional)
+  if (document.getElementById('scanner-bw')?.checked) {
+    _scannerToGrayscale(ctx, w, h);
+  }
+
+  // Convertir a File y asignar al input destino
+  outCanvas.toBlob((blob) => {
+    if (!blob) { showToast('Error al procesar imagen', 'error'); return; }
+    const file = new File([blob], `scan_${Date.now()}.jpg`, { type: 'image/jpeg' });
+    const input = document.getElementById(_scannerTargetId);
+    if (input) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      // Quitar required temporalmente si estaba vacío antes
+      input.dispatchEvent(new Event('change'));
+    }
+    closeScanner();
+    showToast('Escaneo aplicado', 'success');
+  }, 'image/jpeg', 0.92);
+}
+
+function _scannerEnhance(ctx, w, h) {
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+  // Auto-levels: encontrar min/max y escalar
+  let min = 255, max = 0;
+  for (let i = 0; i < d.length; i += 4) {
+    const v = (d[i] + d[i+1] + d[i+2]) / 3;
+    if (v < min) min = v;
+    if (v > max) max = v;
+  }
+  const range = max - min || 1;
+  for (let i = 0; i < d.length; i += 4) {
+    d[i]   = Math.min(255, ((d[i]   - min) / range) * 255);
+    d[i+1] = Math.min(255, ((d[i+1] - min) / range) * 255);
+    d[i+2] = Math.min(255, ((d[i+2] - min) / range) * 255);
+  }
+  ctx.putImageData(imgData, 0, 0);
+}
+
+function _scannerToGrayscale(ctx, w, h) {
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const v = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
+    d[i] = d[i+1] = d[i+2] = v;
+  }
+  ctx.putImageData(imgData, 0, 0);
+}
+
+function closeScanner() {
+  document.getElementById('scanner-overlay').classList.add('hidden');
+  document.body.style.overflow = '';
+  _scannerImg     = null;
+  _scannerCorners = [];
+  _scannerDragIdx = -1;
 }
