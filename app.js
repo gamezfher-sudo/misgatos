@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 't';
+const BUILD         = 'u';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -1859,7 +1859,8 @@ function renderDocuments() {
       <div class="doc-row-icon"><i aria-hidden="true" class="fa-solid ${typeIcon[d.type] || 'fa-file'}"></i></div>
       <div class="doc-row-body">
         <span class="doc-row-title">${d.title}</span>
-        <span class="doc-row-meta">${d.cats?.name || '&mdash;'} &middot; ${typeLabel[d.type] || 'Documento'} &middot; ${docDate}</span>
+        <span class="doc-row-meta">${d.cats?.name || '&mdash;'} &middot; ${typeLabel[d.type] || 'Documento'}</span>
+        <span class="doc-row-date">${docDate}</span>
       </div>
       <div class="doc-row-actions">
         ${d.file_url ? `<button class="btn-primary doc-ver-btn" onclick="openDocViewer('${d.file_url}','${safeTitle}','${d.file_type||''}')"><i aria-hidden="true" class="fa-solid fa-eye"></i> Ver</button>` : ''}
