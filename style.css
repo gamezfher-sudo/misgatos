@@ -935,13 +935,13 @@ h1, h2, h3, h4 {
   background: var(--primary-pale-solid); border-radius: var(--radius-lg);
   color: var(--primary); font-size: 0.95rem;
 }
-.doc-row-body { flex: 1; min-width: 0; }
+.doc-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .doc-row-title {
   display: block; font-weight: 600; font-size: 0.9rem;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   margin-bottom: 2px;
 }
-.doc-row-meta { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc-row-meta { font-size: 0.75rem; color: var(--text-muted); }
 .doc-row-actions {
   display: flex; align-items: center; gap: 8px; flex-shrink: 0;
 }
