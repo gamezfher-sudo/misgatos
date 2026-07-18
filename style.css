@@ -925,6 +925,7 @@ h1, h2, h3, h4 {
   display: flex; align-items: center; gap: 12px;
   box-shadow: var(--shadow);
   transition: box-shadow 0.15s, transform 0.15s;
+  overflow: hidden; min-width: 0;
 }
 .doc-row:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 .doc-row-icon {
@@ -1737,9 +1738,12 @@ h1, h2, h3, h4 {
   .vet-card-actions { flex-wrap: wrap; }
 
   /* ── Documentos ── */
-  .doc-row { padding: 12px 14px; gap: 10px; }
+  .doc-row { padding: 12px 14px; gap: 8px; }
   .doc-row-title { font-size: 0.85rem; }
-  .doc-ver-btn { padding: 5px 10px; }
+  .doc-row .cat-avatar-sm { display: none; }
+  .doc-ver-btn { padding: 6px 10px; font-size: 0; }
+  .doc-ver-btn i { font-size: 0.9rem; }
+  .doc-ver-btn::after { content: ''; }
 
   /* ── Modal ── */
   #modal-overlay { align-items: flex-end; }
