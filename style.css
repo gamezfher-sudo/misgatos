@@ -1468,28 +1468,72 @@ h1, h2, h3, h4 {
   gap: 8px;
 }
 
-/* Estado expandido: crece dentro del modal (no cubre la pantalla) */
+/* Estado expandido: pantalla completa con barra de cierre */
 .quill-editor-wrap.expanded {
-  min-height: 50vh;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: var(--card-bg);
   display: flex;
   flex-direction: column;
   animation: editor-expand 0.2s ease;
 }
+.quill-editor-wrap.expanded .expanded-close-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--bg-dim);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.quill-editor-wrap.expanded .expanded-close-bar .expanded-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.quill-editor-wrap.expanded .expanded-close-bar .expanded-close-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.quill-editor-wrap.expanded .expanded-close-bar .expanded-close-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-pale);
+}
+.quill-editor-wrap.expanded .ql-toolbar {
+  border-radius: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+  flex-shrink: 0;
+}
 .quill-editor-wrap.expanded .ql-container {
   flex: 1;
-  min-height: 40vh;
+  min-height: 0;
   font-size: 1rem;
 }
 .quill-editor-wrap.expanded .ql-editor {
-  min-height: 40vh;
-  padding: 20px 24px;
+  min-height: 0;
+  height: 100%;
+  padding: 24px 32px;
   font-size: 1rem;
   line-height: 1.8;
 }
 
 @keyframes editor-expand {
-  from { opacity: 0.5; max-height: 120px; }
-  to   { opacity: 1; max-height: 50vh; }
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .cons-vet-line  { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 3px; line-height: 1.5; }

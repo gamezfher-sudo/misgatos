@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = '20260720_c';
+const BUILD         = '20260720_d';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -1171,6 +1171,9 @@ function destroyConsultationEditors() {
 function _collapseAllEditors() {
   document.querySelectorAll('.quill-editor-wrap.expanded').forEach(w => {
     w.classList.remove('expanded');
+    // Remover barra de cierre si existe
+    const bar = w.querySelector('.expanded-close-bar');
+    if (bar) bar.remove();
     const btn = w.closest('.field')?.querySelector('.quill-expand-btn');
     if (btn) {
       btn.setAttribute('aria-label', 'Expandir editor');
@@ -1190,6 +1193,21 @@ function toggleEditorSize(which) {
     const other = which === 'diagnosis' ? 'treatment' : 'diagnosis';
     const otherWrap = document.getElementById(`quill-wrap-${other}`);
     if (otherWrap?.classList.contains('expanded')) toggleEditorSize(other);
+    // Agregar barra de cierre dentro del expandido
+    const label = which === 'diagnosis' ? 'Diagnóstico' : 'Tratamiento';
+    const bar = document.createElement('div');
+    bar.className = 'expanded-close-bar';
+    bar.innerHTML = `
+      <span class="expanded-label"><i class="fa-solid fa-pen" aria-hidden="true"></i> ${label}</span>
+      <button type="button" class="expanded-close-btn" onclick="toggleEditorSize('${which}')">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i> Cerrar
+      </button>
+    `;
+    wrap.insertBefore(bar, wrap.firstChild);
+  } else {
+    // Remover barra de cierre
+    const bar = wrap.querySelector('.expanded-close-bar');
+    if (bar) bar.remove();
   }
   if (btn) {
     btn.setAttribute('aria-label', expanded ? 'Contraer editor' : 'Expandir editor');
