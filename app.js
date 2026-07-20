@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'ab';
+const BUILD         = '20260720_a';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -1166,20 +1166,58 @@ function destroyConsultationEditors() {
   if (_quillTreatment) { _quillTreatment.destroy(); _quillTreatment = null; }
 }
 
+function _collapseAllEditors() {
+  document.querySelectorAll('.quill-editor-wrap.expanded').forEach(w => {
+    const which = w.id === 'quill-wrap-diagnosis' ? 'diagnosis' : 'treatment';
+    // Toggle off sin re-ejecutar toggleEditorSize para evitar loops
+    w.classList.remove('expanded');
+    const btn = w.closest('.field')?.querySelector('.quill-expand-btn');
+    if (btn) {
+      btn.setAttribute('aria-label', 'Expandir editor');
+      btn.title = 'Expandir';
+      btn.querySelector('i').className = 'fa-solid fa-expand';
+      btn.style.position = '';
+      btn.style.top = '';
+      btn.style.right = '';
+      btn.style.zIndex = '';
+      btn.style.background = '';
+      btn.style.border = '';
+      btn.style.borderRadius = '';
+      btn.style.padding = '';
+      btn.style.boxShadow = '';
+      btn.style.fontSize = '';
+    }
+  });
+  // Also reset modal close button
+  const closeBtn = document.querySelector('#modal-header .modal-close');
+  if (closeBtn) {
+    closeBtn.style.position = '';
+    closeBtn.style.top = '';
+    closeBtn.style.right = '';
+    closeBtn.style.zIndex = '';
+  }
+}
+
 function toggleEditorSize(which) {
   const wrap = document.getElementById(`quill-wrap-${which}`);
   const btn  = wrap?.closest('.field')?.querySelector('.quill-expand-btn');
   if (!wrap) return;
   const expanded = wrap.classList.toggle('expanded');
+  if (expanded) {
+    // Colapsar el otro editor si está expandido
+    const other = which === 'diagnosis' ? 'treatment' : 'diagnosis';
+    const otherWrap = document.getElementById(`quill-wrap-${other}`);
+    if (otherWrap?.classList.contains('expanded')) toggleEditorSize(other);
+  }
   if (btn) {
     btn.setAttribute('aria-label', expanded ? 'Contraer editor' : 'Expandir editor');
     btn.title = expanded ? 'Contraer' : 'Expandir';
     btn.querySelector('i').className = expanded ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
     if (expanded) {
-      // El botón debe flotar sobre el editor expandido
+      // El botón flota sobre el editor expandido
       btn.style.position = 'fixed';
       btn.style.top = '16px';
-      btn.style.right = '16px';
+      btn.style.right = '56px';
       btn.style.zIndex = '2001';
       btn.style.background = 'var(--card-bg)';
       btn.style.border = '1px solid var(--border)';
@@ -1198,6 +1236,21 @@ function toggleEditorSize(which) {
       btn.style.padding = '';
       btn.style.boxShadow = '';
       btn.style.fontSize = '';
+    }
+  }
+  // Hacer que el botón X del modal también flote sobre el expandido
+  const closeBtn = document.querySelector('#modal-header .modal-close');
+  if (closeBtn) {
+    if (expanded) {
+      closeBtn.style.position = 'fixed';
+      closeBtn.style.top = '16px';
+      closeBtn.style.right = '16px';
+      closeBtn.style.zIndex = '2001';
+    } else {
+      closeBtn.style.position = '';
+      closeBtn.style.top = '';
+      closeBtn.style.right = '';
+      closeBtn.style.zIndex = '';
     }
   }
   // Re-render Quill for proper sizing after transition
@@ -2314,6 +2367,8 @@ function closeModal(e) {
 }
 
 function closeModalDirect() {
+  // Colapsar cualquier editor expandido antes de cerrar
+  _collapseAllEditors();
   destroyConsultationEditors();
   document.getElementById('modal-overlay').classList.add('hidden');
   document.body.style.overflow = '';
