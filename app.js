@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = '20260720_b';
+const BUILD         = '20260720_c';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -1162,8 +1162,10 @@ let _quillDiagnosis = null;
 let _quillTreatment = null;
 
 function destroyConsultationEditors() {
-  if (_quillDiagnosis) { _quillDiagnosis.destroy(); _quillDiagnosis = null; }
-  if (_quillTreatment) { _quillTreatment.destroy(); _quillTreatment = null; }
+  try { if (_quillDiagnosis) { _quillDiagnosis.destroy(); } } catch (e) { console.warn('Error destroying diagnosis editor', e); }
+  _quillDiagnosis = null;
+  try { if (_quillTreatment) { _quillTreatment.destroy(); } } catch (e) { console.warn('Error destroying treatment editor', e); }
+  _quillTreatment = null;
 }
 
 function _collapseAllEditors() {
@@ -2308,9 +2310,11 @@ function closeModal(e) {
 }
 
 function closeModalDirect() {
-  // Colapsar cualquier editor expandido antes de cerrar
-  _collapseAllEditors();
-  destroyConsultationEditors();
+  try {
+    _collapseAllEditors();
+    destroyConsultationEditors();
+  } catch (e) { console.warn('Error cleaning up editors on close', e); }
+  // Cerrar el modal PASE LO QUE PASE
   document.getElementById('modal-overlay').classList.add('hidden');
   document.body.style.overflow = '';
   if (_modalTrigger && typeof _modalTrigger.focus === 'function') {
