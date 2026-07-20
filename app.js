@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'z';
+const BUILD         = 'aa';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -1140,8 +1140,8 @@ function renderConsultations() {
       </div>
       ${(c.diagnosis || c.treatment) ? `
         <div class="cons-expandable" id="cons-exp-${c.id}">
-          ${c.diagnosis ? `<p><strong>Diagnóstico:</strong> ${c.diagnosis}</p>` : ''}
-          ${c.treatment ? `<p><strong>Tratamiento:</strong> ${c.treatment}</p>` : ''}
+          ${c.diagnosis ? `<div class="cons-diag-block"><strong>Diagnóstico:</strong> ${c.diagnosis}</div>` : ''}
+          ${c.treatment ? `<div class="cons-treat-block"><strong>Tratamiento:</strong> ${c.treatment}</div>` : ''}
         </div>
         <button type="button" class="cons-expand-btn" onclick="toggleConsExp('${c.id}',this)" aria-expanded="false">
           <i aria-hidden="true" class="fa-solid fa-chevron-down"></i>
@@ -1155,6 +1155,43 @@ function renderConsultations() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Editores Quill para diagnóstico y tratamiento ──
+let _quillDiagnosis = null;
+let _quillTreatment = null;
+
+function destroyConsultationEditors() {
+  if (_quillDiagnosis) { _quillDiagnosis.destroy(); _quillDiagnosis = null; }
+  if (_quillTreatment) { _quillTreatment.destroy(); _quillTreatment = null; }
+}
+
+function initConsultationEditors(diagnosisHtml, treatmentHtml) {
+  destroyConsultationEditors();
+  const editorOpts = {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered'}, { list: 'bullet' }],
+        [{ header: [1, 2, 3, false] }],
+        [{ color: [] }, { background: [] }],
+        ['clean']
+      ]
+    },
+    placeholder: 'Escribe aquí…'
+  };
+
+  const diagEl = document.getElementById('quill-editor-diagnosis');
+  const treatEl = document.getElementById('quill-editor-treatment');
+  if (diagEl) {
+    _quillDiagnosis = new Quill('#quill-editor-diagnosis', { ...editorOpts, placeholder: 'Escribe el diagnóstico…' });
+    if (diagnosisHtml) _quillDiagnosis.root.innerHTML = diagnosisHtml;
+  }
+  if (treatEl) {
+    _quillTreatment = new Quill('#quill-editor-treatment', { ...editorOpts, placeholder: 'Escribe el tratamiento…' });
+    if (treatmentHtml) _quillTreatment.root.innerHTML = treatmentHtml;
+  }
 }
 
 function showConsultationForm(consId = null) {
@@ -1210,11 +1247,17 @@ function showConsultationForm(consId = null) {
       </div>
       <div class="field">
         <label>Diagnostico</label>
-        <textarea name="diagnosis">${c?.diagnosis || ''}</textarea>
+        <div class="quill-editor-wrap">
+          <div id="quill-editor-diagnosis"></div>
+        </div>
+        <input type="hidden" name="diagnosis" id="diagnosis-html">
       </div>
       <div class="field">
         <label>Tratamiento</label>
-        <textarea name="treatment">${c?.treatment || ''}</textarea>
+        <div class="quill-editor-wrap">
+          <div id="quill-editor-treatment"></div>
+        </div>
+        <input type="hidden" name="treatment" id="treatment-html">
       </div>
       <div class="field-row">
         <div class="field">
@@ -1250,6 +1293,8 @@ function showConsultationForm(consId = null) {
       </div>
     </form>
   `);
+  // Inicializar editores Quill después de que el modal se haya renderizado
+  requestAnimationFrame(() => initConsultationEditors(c?.diagnosis || '', c?.treatment || ''));
 }
 
 function addConsDocRow() {
@@ -1405,6 +1450,11 @@ async function saveConsDocRows(consId, catId, visitDate) {
 
 async function saveConsultation(e, consId) {
   e.preventDefault();
+  // Copiar contenido de los editores Quill a los hidden inputs antes de leer FormData
+  const diagInput = document.getElementById('diagnosis-html');
+  const treatInput = document.getElementById('treatment-html');
+  if (diagInput && _quillDiagnosis) diagInput.value = _quillDiagnosis.root.innerHTML;
+  if (treatInput && _quillTreatment) treatInput.value = _quillTreatment.root.innerHTML;
   const fd = new FormData(e.target);
   const catId = fd.get('cat_id');
   const visitDate = fd.get('visit_date');
@@ -2217,6 +2267,7 @@ function closeModal(e) {
 }
 
 function closeModalDirect() {
+  destroyConsultationEditors();
   document.getElementById('modal-overlay').classList.add('hidden');
   document.body.style.overflow = '';
   if (_modalTrigger && typeof _modalTrigger.focus === 'function') {
