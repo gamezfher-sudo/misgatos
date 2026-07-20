@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'aa';
+const BUILD         = 'ab';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -1166,6 +1166,45 @@ function destroyConsultationEditors() {
   if (_quillTreatment) { _quillTreatment.destroy(); _quillTreatment = null; }
 }
 
+function toggleEditorSize(which) {
+  const wrap = document.getElementById(`quill-wrap-${which}`);
+  const btn  = wrap?.closest('.field')?.querySelector('.quill-expand-btn');
+  if (!wrap) return;
+  const expanded = wrap.classList.toggle('expanded');
+  if (btn) {
+    btn.setAttribute('aria-label', expanded ? 'Contraer editor' : 'Expandir editor');
+    btn.title = expanded ? 'Contraer' : 'Expandir';
+    btn.querySelector('i').className = expanded ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+    if (expanded) {
+      // El botón debe flotar sobre el editor expandido
+      btn.style.position = 'fixed';
+      btn.style.top = '16px';
+      btn.style.right = '16px';
+      btn.style.zIndex = '2001';
+      btn.style.background = 'var(--card-bg)';
+      btn.style.border = '1px solid var(--border)';
+      btn.style.borderRadius = '8px';
+      btn.style.padding = '8px 10px';
+      btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+      btn.style.fontSize = '0.85rem';
+    } else {
+      btn.style.position = '';
+      btn.style.top = '';
+      btn.style.right = '';
+      btn.style.zIndex = '';
+      btn.style.background = '';
+      btn.style.border = '';
+      btn.style.borderRadius = '';
+      btn.style.padding = '';
+      btn.style.boxShadow = '';
+      btn.style.fontSize = '';
+    }
+  }
+  // Re-render Quill for proper sizing after transition
+  const quill = which === 'diagnosis' ? _quillDiagnosis : _quillTreatment;
+  if (quill) setTimeout(() => quill.update(), 50);
+}
+
 function initConsultationEditors(diagnosisHtml, treatmentHtml) {
   destroyConsultationEditors();
   const editorOpts = {
@@ -1246,15 +1285,23 @@ function showConsultationForm(consId = null) {
         <input type="text" name="reason" value="${c?.reason || ''}">
       </div>
       <div class="field">
-        <label>Diagnostico</label>
-        <div class="quill-editor-wrap">
+        <label>Diagnostico
+          <button type="button" class="quill-expand-btn" onclick="toggleEditorSize('diagnosis')" aria-label="Expandir editor" title="Expandir / contraer">
+            <i class="fa-solid fa-expand" aria-hidden="true"></i>
+          </button>
+        </label>
+        <div class="quill-editor-wrap" id="quill-wrap-diagnosis">
           <div id="quill-editor-diagnosis"></div>
         </div>
         <input type="hidden" name="diagnosis" id="diagnosis-html">
       </div>
       <div class="field">
-        <label>Tratamiento</label>
-        <div class="quill-editor-wrap">
+        <label>Tratamiento
+          <button type="button" class="quill-expand-btn" onclick="toggleEditorSize('treatment')" aria-label="Expandir editor" title="Expandir / contraer">
+            <i class="fa-solid fa-expand" aria-hidden="true"></i>
+          </button>
+        </label>
+        <div class="quill-editor-wrap" id="quill-wrap-treatment">
           <div id="quill-editor-treatment"></div>
         </div>
         <input type="hidden" name="treatment" id="treatment-html">
