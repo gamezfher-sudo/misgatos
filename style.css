@@ -1330,6 +1330,7 @@ h1, h2, h3, h4 {
   padding: 16px 20px;
   box-shadow: var(--shadow);
   transition: box-shadow 0.15s, transform 0.15s;
+  cursor: pointer;
 }
 .cons-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 

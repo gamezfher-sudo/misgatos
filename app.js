@@ -8,7 +8,7 @@
 // ──────────────────────────────────────────────
 const SUPABASE_URL  = 'https://ryjmssfihczyooumwdxs.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_PlQBi5aOpgoLnfYXBN5--g_opxu-7yz';
-const BUILD         = 'y';
+const BUILD         = 'z';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ──────────────────────────────────────────────
@@ -1107,7 +1107,7 @@ function renderConsultations() {
     }).join('');
 
     return `
-    <div class="cons-card">
+    <div class="cons-card" onclick="editConsCard(event,'${c.id}')">
       <div class="cons-card-header">
         <div class="apt-date-box">
           ${catPhotoHtml}
@@ -1293,6 +1293,12 @@ async function unlinkConsDoc(docId, consId = null) {
     const existingSection = document.querySelector('.cons-existing-docs');
     if (existingSection) existingSection.remove();
   }
+}
+
+function editConsCard(e, consId) {
+  // No abrir formulario al hacer click en botones o enlaces dentro de la tarjeta
+  if (e.target.closest('button') || e.target.closest('a')) return;
+  showConsultationForm(consId);
 }
 
 function toggleConsExp(id, btn) {
